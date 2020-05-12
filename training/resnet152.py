@@ -13,8 +13,8 @@ import copy
 from confusion_matrix import plot_confusion_matrix
 import time
 start=time.time()
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-os.environ["CUDA_VISIBLE_DEVICES"]="1"
+device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+#os.environ["CUDA_VISIBLE_DEVICES"]="1"
 data_transforms = {
     'train': transforms.Compose([
         transforms.ToTensor(),
@@ -31,7 +31,7 @@ dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,sh
 dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
 class_names = image_datasets['train'].classes
 
-def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
+def train_model(model, criterion, optimizer, scheduler, num_epochs=100):
     since = time.time()
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
@@ -146,8 +146,8 @@ criterion = nn.CrossEntropyLoss()
 # 모든 매개변수들이 최적화되었는지 관찰
 optimizer_ft = optim.Adam(model_ft.parameters(), lr=0.001)
 # 7 에폭마다 0.1씩 학습율 감소
-exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0)
-model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=25)
+exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=80, gamma=0.1)
+model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=100)
 #visualize_model(model_ft)
 confusion_mat(model_ft)
 '''
