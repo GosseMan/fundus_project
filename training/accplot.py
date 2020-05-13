@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 def loss_accuracy_plot(epoch_num, train_loss, val_loss,
                           train_acc,
-                          val_acc,network):
+                          val_acc,fig_name):
     epoch_list=list(range(epoch_num))
     ax1=plt.subplot(2,1,1)
     plt.title('loss')
@@ -14,7 +14,7 @@ def loss_accuracy_plot(epoch_num, train_loss, val_loss,
     plt.title('acc')
     graph2=  plt.plot(epoch_list,train_acc,epoch_list,val_acc)
     plt.legend(['train_acc','val_acc'])
-    plt.savefig(network+'.png')
+    plt.savefig(fig_name+'_lossaccplot'+'.png')
     plt.show()
     return
 def main():

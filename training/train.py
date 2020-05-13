@@ -17,24 +17,8 @@ import time
 import argparse
 start=time.time()
 
-#os.environ["CUDA_VISIBLE_DEVICES"]="1"
-data_transforms = {
-    'train': transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ]),
-    'val': transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ]),
-}
-data_dir = '../data/FUNDUS_480_SPLIT_UNDER_AUG'
-image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])  for x in ['train', 'val']}
-dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,shuffle=True, num_workers=4) for x in ['train', 'val']}
-dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
-class_names = image_datasets['train'].classes
 
-def train_model(model, criterion, optimizer, scheduler,network, num_epochs=100):
+def train_model(model,image_datasets,dataloaders, criterion, optimizer, scheduler,fig_name,num_epochs=100):
     since = time.time()
     train_loss_list = []
     val_loss_list = []
@@ -43,6 +27,8 @@ def train_model(model, criterion, optimizer, scheduler,network, num_epochs=100):
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
     best_loss = 10000
+    dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
+
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
@@ -97,12 +83,13 @@ def train_model(model, criterion, optimizer, scheduler,network, num_epochs=100):
         time_elapsed // 60, time_elapsed % 60))
     print('Best val Acc: {:4f}'.format(best_acc))
     # 가장 나은 모델 가중치를 불러옴
-    loss_accuracy_plot(num_epochs,train_loss_list,val_loss_list,train_acc_list,val_acc_list,network)
+    loss_accuracy_plot(num_epochs,train_loss_list,val_loss_list,train_acc_list,val_acc_list,fig_name)
     model.load_state_dict(best_model_wts)
+
     return model
 
 
-def confusion_mat(model,net='net'):
+def confusion_mat(model,fig_name, dataloaders,class_names):
     was_training = model.training
     model.eval()
     images_so_far = 0
@@ -112,17 +99,14 @@ def confusion_mat(model,net='net'):
     with torch.no_grad():
         for i, (inputs, labels) in enumerate(dataloaders['val']):
             ground=np.append(ground,labels.numpy())
-
             inputs = inputs.cuda()
             labels = labels.cuda()
-
             outputs = model(inputs)
             _, preds = torch.max(outputs, 1)
             preds=preds.cpu()
             pred=np.append(pred,preds.numpy())
-
     plot_confusion_matrix(ground,pred,classes=np.array(class_names),normalize=True)
-    plt.savefig(net+".png")
+    plt.savefig(fig_name+"_confusion.png")
 
 def main():
     parser = argparse.ArgumentParser(description = 'Network')
@@ -131,24 +115,46 @@ def main():
     parser.add_argument('--lr',type=float,default=0.001,help='Learning rate (default:0)')
     parser.add_argument('--epochs',type=int,default=0,help='Epochs (default:100)')
     parser.add_argument('--fine_tuning',type=bool,default=True,help='Fine Tuning (default=True)')
+    parser.add_argument('--class_num',type=int,default=4,help='Class Number (default=4)')
     args = parser.parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"]=args.gpu_id
+
+
+    data_transforms = {
+        'train': transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ]),
+        'val': transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ]),
+    }
+    if args.class_num==4:
+        data_dir = '../data/FUNDUS_480_SPLIT_UNDER_AUG'
+    elif args.class_num==2:
+        data_dir = '../data/FUNDUS_480_SPLIT_AUG_BINARY'
+    image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])  for x in ['train', 'val']}
+    dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,shuffle=True, num_workers=4) for x in ['train', 'val']}
+    class_names = image_datasets['train'].classes
+
+
     if args.network == 'resnet18':
         model_ft = models.resnet18(pretrained=True)
         num_ftrs = model_ft.fc.in_features
-        model_ft.fc = nn.Linear(num_ftrs, len(class_names))
+        model_ft.fc = nn.Linear(num_ftrs, args.class_num)
     elif args.network == 'resnet152':
         model_ft = models.resnet152(pretrained=True)
         num_ftrs = model_ft.fc.in_features
-        model_ft.fc = nn.Linear(num_ftrs, len(class_names))
+        model_ft.fc = nn.Linear(num_ftrs, args.class_num)
     elif args.network == 'densenet121':
         model_ft = models.densenet121(pretrained=True)
         num_ftrs = model_ft.classifier.in_features
-        model_ft.classifier = nn.Linear(num_ftrs, len(class_names))
+        model_ft.classifier = nn.Linear(num_ftrs, args.class_num)
     elif args.network == 'densenet169':
         model_ft = models.densenet169(pretrained=True)
         num_ftrs = model_ft.classifier.in_features
-        model_ft.classifier = nn.Linear(num_ftrs, len(class_names))
+        model_ft.classifier = nn.Linear(num_ftrs, args.class_num)
     else:
         print("Write Network Name")
     if args.fine_tuning==False:
@@ -157,11 +163,13 @@ def main():
     model_ft = model_ft.cuda()
     criterion = nn.CrossEntropyLoss()
     optimizer_ft = optim.Adam(model_ft.parameters(),lr = args.lr)
-    exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft,step_size=80,gamma=0.1)
-    model_ft=train_model(model_ft,criterion,optimizer_ft,exp_lr_scheduler,args.network,num_epochs=args.epochs)
+    exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft,step_size=70,gamma=0.1)
+    fig_name = args.network+'_'+str(args.class_num)
+    model_ft=train_model(model_ft,image_datasets,dataloaders,criterion,optimizer_ft,exp_lr_scheduler,fig_name,num_epochs=args.epochs)
     #visualize_model(model_ft)
-    confusion_mat(model_ft,args.network)
+    confusion_mat(model_ft,fig_name,dataloaders,class_names)
     print("time : ", time.time()-start)
     return
+    
 if __name__ == '__main__':
     main()
