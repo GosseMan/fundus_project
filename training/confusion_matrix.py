@@ -1,4 +1,4 @@
-import numpy as np
+    import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import svm, datasets
 from sklearn.model_selection import train_test_split
@@ -30,8 +30,8 @@ def plot_confusion_matrix(y_true, y_pred, classes,
     else:
         print('Confusion matrix, without normalization')
     #classes=['ZERO','ONE','TWO','THREE']
-    print(y_true)
-    print(y_pred)
+    #print(y_true)
+    #print(y_pred)
     fig, ax = plt.subplots()
     im = ax.imshow(cm, interpolation='nearest', cmap=cmap)
     ax.figure.colorbar(im, ax=ax)
