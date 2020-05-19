@@ -15,10 +15,12 @@ from confusion_matrix import plot_confusion_matrix
 from accplot import loss_accuracy_plot
 import time
 import argparse
+import gradcam
+import cv2
 start=time.time()
 
 
-def train_model(model,image_datasets,dataloaders, criterion, optimizer, scheduler,fig_name,num_epochs=100):
+def train_model(model,image_datasets,dataloaders, criterion, optimizer, scheduler,fig_name,early_stopping,num_epochs=100):
     since = time.time()
     train_loss_list = []
     val_loss_list = []
@@ -28,7 +30,8 @@ def train_model(model,image_datasets,dataloaders, criterion, optimizer, schedule
     best_acc = 0.0
     best_loss = 10000
     dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
-
+    earlystop = 0
+    prev_loss=10000
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
@@ -69,20 +72,35 @@ def train_model(model,image_datasets,dataloaders, criterion, optimizer, schedule
             else:
                 val_loss_list.append(epoch_loss)
                 val_acc_list.append(epoch_acc)
+
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                 phase, epoch_loss, epoch_acc))
 
             # 모델을 깊은 복사(deep copy)함
-            if phase == 'val' and epoch_loss < best_loss:
-                best_acc = epoch_acc
-                best_loss = epoch_loss
-                best_model_wts = copy.deepcopy(model.state_dict())
+            if phase == 'val':
+                if prev_loss<epoch_loss:
+                    earlystop=earlystop+1
+                else:
+                    earlystop=0
+                if epoch_loss < best_loss:
+                    best_acc = epoch_acc
+                    best_loss = epoch_loss
+                    best_model_wts = copy.deepcopy(model.state_dict())
+                    best_epoch = epoch
+                prev_loss = epoch_loss
+        if earlystop==5 and early_stopping==True:
+            print('Early Stopping at Epoch {}'.format(epoch))
+            num_epochs=epoch+1
+            break
         print()
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(
         time_elapsed // 60, time_elapsed % 60))
     print('Best val Acc: {:4f}'.format(best_acc))
+    print('Best val Acc at: {} Epoch'.format(best_epoch))
     # 가장 나은 모델 가중치를 불러옴
+    while os.path.isfile(fig_name+'_lossaccplot.png'):
+        fig_name=fig_name+'-1'
     loss_accuracy_plot(num_epochs,train_loss_list,val_loss_list,train_acc_list,val_acc_list,fig_name)
     model.load_state_dict(best_model_wts)
 
@@ -106,16 +124,47 @@ def confusion_mat(model,fig_name, dataloaders,class_names):
             preds=preds.cpu()
             pred=np.append(pred,preds.numpy())
     plot_confusion_matrix(ground,pred,classes=np.array(class_names),normalize=True)
+    while os.path.isfile(fig_name+'_confusion.png'):
+        fig_name=fig_name+'-1'
     plt.savefig(fig_name+"_confusion.png")
+
+def gc(model_ft,data_path,imgpath,idx):
+    model = model_ft
+    grad_cam = gradcam.GradCam(model=model, feature_module=model.layer4, target_layer_names=["2"], use_cuda=True)
+
+    image_path =data_path
+    img = cv2.imread(image_path, 1)
+    img = np.float32(cv2.resize(img, (480, 480))) / 255
+    input = gradcam.preprocess_image(img)
+
+    # If None, returns the map for the highest scoring category.
+    # Otherwise, targets the requested index.
+    target_index = None
+    mask, pred= grad_cam(input, target_index)
+
+    gradcam.show_cam_on_image(img, mask,imgpath,idx,pred)
+    '''
+    gb_model = gradcam.GuidedBackpropReLUModel(model=model, use_cuda=True)
+    #print(model._modules.items())
+    gb = gb_model(input, index=target_index)
+    gb = gb.transpose((1, 2, 0))
+    cam_mask = cv2.merge([mask, mask, mask])
+    cam_gb = gradcam.deprocess_image(cam_mask*gb)
+    gb = gradcam.deprocess_image(gb)
+    cv2.imwrite(imgpath+'/'+str(idx)+'-gb.jpg', gb)
+    cv2.imwrite(imgpath+'/'+str(idx)+'-camgb.jpg', cam_gb)
+    '''
 
 def main():
     parser = argparse.ArgumentParser(description = 'Network')
     parser.add_argument('--network', default='resnet152',type=str)
-    parser.add_argument('--gpu_id',type=str,default=0,help='GPU_ID (default:0)')
+    parser.add_argument('--gpu_id',type=str,default='0',help='GPU_ID (default:0)')
     parser.add_argument('--lr',type=float,default=0.001,help='Learning rate (default:0)')
-    parser.add_argument('--epochs',type=int,default=0,help='Epochs (default:100)')
-    parser.add_argument('--fine_tuning',type=bool,default=True,help='Fine Tuning (default=True)')
-    parser.add_argument('--class_num',type=int,default=4,help='Class Number (default=4)')
+    parser.add_argument('--epochs',type=int,default=100,help='Epochs (default:100)')
+    parser.add_argument('--fine_tuning',type=bool,default=False,help='Fine Tuning (default=False)')
+    parser.add_argument('--class_num',type=int,default=3,help='Class Number (default=3)')
+    parser.add_argument('--es',type=bool,default=False,help='Early Stopping (default=False)')
+    parser.add_argument('--gc',type=bool,default=True,help='GRAD-CAM (default=True)')
     args = parser.parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"]=args.gpu_id
 
@@ -130,17 +179,20 @@ def main():
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
     }
-    if args.class_num==4:
-        data_dir = '../data/FUNDUS_480_SPLIT_UNDER_AUG'
+    if args.class_num==3:
+        data_dir = '../data/FUNDUS_DATA_SPLIT_480_UNDER_AUG_CLAHE'
     elif args.class_num==2:
         data_dir = '../data/FUNDUS_480_SPLIT_AUG_BINARY'
     image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])  for x in ['train', 'val']}
-    dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,shuffle=True, num_workers=4) for x in ['train', 'val']}
+    dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=6,shuffle=True, num_workers=4) for x in ['train', 'val']}
     class_names = image_datasets['train'].classes
-
 
     if args.network == 'resnet18':
         model_ft = models.resnet18(pretrained=True)
+        num_ftrs = model_ft.fc.in_features
+        model_ft.fc = nn.Linear(num_ftrs, args.class_num)
+    elif args.network == 'resnet50':
+        model_ft = models.resnet50(pretrained=True)
         num_ftrs = model_ft.fc.in_features
         model_ft.fc = nn.Linear(num_ftrs, args.class_num)
     elif args.network == 'resnet152':
@@ -163,13 +215,27 @@ def main():
     model_ft = model_ft.cuda()
     criterion = nn.CrossEntropyLoss()
     optimizer_ft = optim.Adam(model_ft.parameters(),lr = args.lr)
-    exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft,step_size=70,gamma=0.1)
-    fig_name = args.network+'_'+str(args.class_num)
-    model_ft=train_model(model_ft,image_datasets,dataloaders,criterion,optimizer_ft,exp_lr_scheduler,fig_name,num_epochs=args.epochs)
+    steps = args.epochs*0.7
+    exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft,step_size=20,gamma=0.1)
+    fig_name = args.network+'_'+args.gpu_id
+    model_ft=train_model(model_ft,image_datasets,dataloaders,criterion,optimizer_ft,exp_lr_scheduler,fig_name, early_stopping=args.es,num_epochs=args.epochs)
     #visualize_model(model_ft)
+    torch.save(model_ft,'./'+gpu_id+'_'+args.network+'_model.pt')
     confusion_mat(model_ft,fig_name,dataloaders,class_names)
     print("time : ", time.time()-start)
-    return
-    
+    if args.gc == True:
+        gradpath = './gradcam_'+args.gpu_id
+        if not os.path.isdir('./gradcam_'+args.gpu_id):
+            os.makedirs('./gradcam_'+args.gpu_id)
+        for cls in class_names:
+            idx=0
+            filenames = os.listdir(data_dir+'/val/'+cls)
+            if not os.path.isdir(gradpath+'/'+cls):
+                os.makedirs(gradpath+'/'+cls)
+            for name in filenames:
+                gc(model_ft,data_dir+'/val/'+cls+'/'+name,gradpath+'/'+cls,idx)
+                idx=idx+1
+
+
 if __name__ == '__main__':
     main()
