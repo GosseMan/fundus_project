@@ -100,7 +100,7 @@ def visualize(img_path, labelfolder,model,outpath):
     pp, cc = torch.topk(nn.Softmax(dim=1)(model(img_tensor.cuda())), 1)
     light_jet = cmap_map(lambda x: x/2 + 0.5, matplotlib.cm.jet)
     img_name = os.path.basename(img_path)
-    print(img_name)
+
     for i, (p, c) in enumerate(zip(pp[0], cc[0])):
         plt.figure(figsize=(10, 10))
         plt.subplot(1, 1, 1)
@@ -112,7 +112,6 @@ def visualize(img_path, labelfolder,model,outpath):
         plt.axis('off')
         plt.imshow(img)
         plt.imshow(np.array(sal), alpha=0.4, cmap=light_jet)
-        print(get_class_name(c))
         plt.axis('off')
         plt.tight_layout()
         plt.savefig(outpath+'{}/{}_{}_{}'.format(labelfolder, labelfolder, get_class_name(c),img_name),bbox_inces='tight',pad_inches=0,dpi=100)
@@ -153,6 +152,6 @@ def main():
             #size_cropping(img,filename)
             visualize(fullpathname, labelfolder, model, outpath)
             count += 1
-            print(count)
+
 if __name__ == '__main__':
     main()
