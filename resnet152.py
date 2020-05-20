@@ -14,6 +14,7 @@ import copy
 from confusion_matrix import plot_confusion_matrix
 import time
 start=time.time()
+
 plt.ion()
 data_transforms = {
     'train': transforms.Compose([
@@ -25,9 +26,9 @@ data_transforms = {
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ]),
 }
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
-data_dir = './fundus_data_aug'
+data_dir = './FUNDUS_480_SPLIT_AUG'
 
 image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])  for x in ['train', 'val']}
 dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,shuffle=True, num_workers=4) for x in ['train', 'val']}
@@ -130,7 +131,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     return model
 
 
-
+'''
 def visualize_model(model, num_images=6):
     was_training = model.training
     model.eval()
@@ -157,7 +158,7 @@ def visualize_model(model, num_images=6):
                     model.train(mode=was_training)
                     return
         model.train(mode=was_training)
-
+'''
 def confusion_mat(model):
     was_training = model.training
     model.eval()
@@ -189,18 +190,12 @@ model_ft.fc = nn.Linear(num_ftrs, len(class_names))
 model_ft = model_ft.to(device)
 #print(model_ft)
 criterion = nn.CrossEntropyLoss()
-
 # 모든 매개변수들이 최적화되었는지 관찰
 optimizer_ft = optim.Adam(model_ft.parameters(), lr=0.001)
-
 # 7 에폭마다 0.1씩 학습율 감소
 exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
-
-
-
 model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler, num_epochs=25)
 #visualize_model(model_ft)
-
 confusion_mat(model_ft)
 '''
 model_conv = torchvision.models.resnet18(pretrained=True)
