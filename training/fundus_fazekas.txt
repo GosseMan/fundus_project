@@ -1,0 +1,3 @@
+0 0ZERO
+1 1ONE
+2 2TWO

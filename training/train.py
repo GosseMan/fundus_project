@@ -164,7 +164,7 @@ def main():
     parser.add_argument('--fine_tuning',type=bool,default=False,help='Fine Tuning (default=False)')
     parser.add_argument('--class_num',type=int,default=3,help='Class Number (default=3)')
     parser.add_argument('--es',type=bool,default=False,help='Early Stopping (default=False)')
-    parser.add_argument('--gc',type=bool,default=True,help='GRAD-CAM (default=True)')
+    parser.add_argument('--gc',type=bool,default=False,help='GRAD-CAM (default=False)')
     args = parser.parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"]=args.gpu_id
 
@@ -186,32 +186,45 @@ def main():
     image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])  for x in ['train', 'val']}
     dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=6,shuffle=True, num_workers=4) for x in ['train', 'val']}
     class_names = image_datasets['train'].classes
-
+    print(args.fine_tuning)
     if args.network == 'resnet18':
         model_ft = models.resnet18(pretrained=True)
+        if not args.fine_tuning:
+            for param in model_ft.parameters():
+                param.requires_grad = False
         num_ftrs = model_ft.fc.in_features
         model_ft.fc = nn.Linear(num_ftrs, args.class_num)
     elif args.network == 'resnet50':
         model_ft = models.resnet50(pretrained=True)
+        if not args.fine_tuning:
+            for param in model_ft.parameters():
+                param.requires_grad = False
         num_ftrs = model_ft.fc.in_features
         model_ft.fc = nn.Linear(num_ftrs, args.class_num)
     elif args.network == 'resnet152':
         model_ft = models.resnet152(pretrained=True)
+        if not args.fine_tuning:
+            for param in model_ft.parameters():
+                param.requires_grad = False
         num_ftrs = model_ft.fc.in_features
         model_ft.fc = nn.Linear(num_ftrs, args.class_num)
     elif args.network == 'densenet121':
         model_ft = models.densenet121(pretrained=True)
+        if not args.fine_tuning:
+            for param in model_ft.parameters():
+                param.requires_grad = False
         num_ftrs = model_ft.classifier.in_features
         model_ft.classifier = nn.Linear(num_ftrs, args.class_num)
     elif args.network == 'densenet169':
         model_ft = models.densenet169(pretrained=True)
+        if not args.fine_tuning:
+            for param in model_ft.parameters():
+                param.requires_grad = False
         num_ftrs = model_ft.classifier.in_features
         model_ft.classifier = nn.Linear(num_ftrs, args.class_num)
     else:
         print("Write Network Name")
-    if args.fine_tuning==False:
-        for param in model_conv.parameters():
-            param.requires_grad = False
+
     model_ft = model_ft.cuda()
     criterion = nn.CrossEntropyLoss()
     optimizer_ft = optim.Adam(model_ft.parameters(),lr = args.lr)
@@ -220,21 +233,39 @@ def main():
     fig_name = args.network+'_'+args.gpu_id
     model_ft=train_model(model_ft,image_datasets,dataloaders,criterion,optimizer_ft,exp_lr_scheduler,fig_name, early_stopping=args.es,num_epochs=args.epochs)
     #visualize_model(model_ft)
-    torch.save(model_ft,'./'+gpu_id+'_'+args.network+'_model.pt')
+    torch.save(model_ft,'./'+args.gpu_id+'_'+args.network+'_model.pt')
     confusion_mat(model_ft,fig_name,dataloaders,class_names)
-    print("time : ", time.time()-start)
+    print("time for train : ", time.time()-start)
     if args.gc == True:
-        gradpath = './gradcam_'+args.gpu_id
-        if not os.path.isdir('./gradcam_'+args.gpu_id):
-            os.makedirs('./gradcam_'+args.gpu_id)
-        for cls in class_names:
-            idx=0
-            filenames = os.listdir(data_dir+'/val/'+cls)
-            if not os.path.isdir(gradpath+'/'+cls):
-                os.makedirs(gradpath+'/'+cls)
-            for name in filenames:
-                gc(model_ft,data_dir+'/val/'+cls+'/'+name,gradpath+'/'+cls,idx)
-                idx=idx+1
+        model = model_ft
+        outpath = './gc_'+args.network+'_'+args.gpu_id+'/'
+        if not os.path.isdir(outpath):
+            os.makedirs(outpath)
+        use_fixed = True
+        model.__class__.__name__
+        if use_fixed == True:
+            for param in model.parameters():
+                param.requires_grad = True
+        # Split model in two parts
+        model = model.eval()
+        model = model.cuda()
+        #visualize(img_path, labelfolder)
+        labellist = ['0ZERO', '1ONE', '2TWO']
+        #labelfolder = '0ZERO'
+        for labelfolder in labellist:
+            dirname = data_dir+'/val/{}'.format(labelfolder)
+            #dirname = "C:\\Users\\USER\\Desktop\\LSIL\\add"
+            filenames = os.listdir(dirname)
+            #only_name = filename.split('.')[0]
+            #count = 0
+            if not os.path.isdir(outpath+labelfolder):
+                os.makedirs(outpath+labelfolder)
+            for filename in filenames:
+                fullpathname = os.path.join(dirname,filename)
+                #img = cv2.imread(fullpathname)
+                #size_cropping(img,filename)
+                gradcam.visualize(fullpathname, labelfolder, model, outpath)
+                #count += 1
 
 
 if __name__ == '__main__':
