@@ -154,7 +154,7 @@ def main():
         ]),
     }
     if args.class_num==3:
-        data_dir = '../data/FUNDUS_DATA_SPLIT_480_UNDER_AUG_CLAHE'
+        data_dir = '../data/noiserm_split_480_under_aug_clahe'
     elif args.class_num==2:
         data_dir = '../data/FUNDUS_480_SPLIT_AUG_BINARY'
     image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])  for x in ['train', 'val']}
