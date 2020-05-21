@@ -4,8 +4,8 @@ import shutil
 import random
 
 # # Creating Train / Val / Test folders (One time use)
-root_dir = 'fundus_data_aug'
-classes_dir = ['0ZERO', '1ONE', '2TWO', '3THREE']
+root_dir = '../../fundus_data'
+classes_dir = ['0ZERO', '1ONE', '2TWO']
 
 val_ratio = 0.15
 #test_ratio = 0.05
@@ -20,7 +20,7 @@ for cls in classes_dir:
     src = root_dir + '/'+cls # Folder to copy images from
 
     allFileNames = os.listdir(src)
-    random.seed(7)
+    np.random.seed(7)
     np.random.shuffle(allFileNames)
     train_FileNames, val_FileNames = np.split(np.array(allFileNames),[int(len(allFileNames)* (1 - val_ratio))])
 
