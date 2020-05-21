@@ -128,33 +128,6 @@ def confusion_mat(model,fig_name, dataloaders,class_names):
         fig_name=fig_name+'-1'
     plt.savefig(fig_name+"_confusion.png")
 
-def gc(model_ft,data_path,imgpath,idx):
-    model = model_ft
-    grad_cam = gradcam.GradCam(model=model, feature_module=model.layer4, target_layer_names=["2"], use_cuda=True)
-
-    image_path =data_path
-    img = cv2.imread(image_path, 1)
-    img = np.float32(cv2.resize(img, (480, 480))) / 255
-    input = gradcam.preprocess_image(img)
-
-    # If None, returns the map for the highest scoring category.
-    # Otherwise, targets the requested index.
-    target_index = None
-    mask, pred= grad_cam(input, target_index)
-
-    gradcam.show_cam_on_image(img, mask,imgpath,idx,pred)
-    '''
-    gb_model = gradcam.GuidedBackpropReLUModel(model=model, use_cuda=True)
-    #print(model._modules.items())
-    gb = gb_model(input, index=target_index)
-    gb = gb.transpose((1, 2, 0))
-    cam_mask = cv2.merge([mask, mask, mask])
-    cam_gb = gradcam.deprocess_image(cam_mask*gb)
-    gb = gradcam.deprocess_image(gb)
-    cv2.imwrite(imgpath+'/'+str(idx)+'-gb.jpg', gb)
-    cv2.imwrite(imgpath+'/'+str(idx)+'-camgb.jpg', cam_gb)
-    '''
-
 def main():
     parser = argparse.ArgumentParser(description = 'Network')
     parser.add_argument('--network', default='resnet152',type=str)
@@ -227,8 +200,8 @@ def main():
     model_ft = model_ft.cuda()
     criterion = nn.CrossEntropyLoss()
     optimizer_ft = optim.Adam(model_ft.parameters(),lr = args.lr)
-    steps = args.epochs*0.7
-    exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft,step_size=20,gamma=0.1)
+    steps = int(args.epochs*0.7)
+    exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft,step_size=steps,gamma=0.1)
     fig_name = args.network+'_'+args.gpu_id
     model_ft=train_model(model_ft,image_datasets,dataloaders,criterion,optimizer_ft,exp_lr_scheduler,fig_name, early_stopping=args.es,num_epochs=args.epochs)
     #visualize_model(model_ft)

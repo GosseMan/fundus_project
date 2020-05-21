@@ -4,9 +4,9 @@ import shutil
 import random
 
 # # Creating Train / Val / Test folders (One time use)
-root_dir = 'fundus_data'
-classes_dir = ['ZERO', 'ONE']
-num_sample = 300
+root_dir = '../../FUNDUS_DATA_SPLIT_480/val'
+classes_dir = ['0ZERO', '1ONE']
+num_sample = 250
 #test_ratio = 0.05
 #os.makedirs(root_dir+'/test')
 for cls in classes_dir:

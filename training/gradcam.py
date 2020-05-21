@@ -115,6 +115,7 @@ def visualize(img_path, labelfolder,model,outpath):
         plt.axis('off')
         plt.tight_layout()
         plt.savefig(outpath+'{}/{}_{}_{}'.format(labelfolder, labelfolder, get_class_name(c),img_name),bbox_inces='tight',pad_inches=0,dpi=100)
+        plt.close()
     plt.tight_layout()
     plt.subplots_adjust(left = 0, bottom = 0, right = 1, top = 1)
 
