@@ -226,7 +226,6 @@ def main():
         #labelfolder = '0ZERO'
         for labelfolder in labellist:
             dirname = data_dir+'/val/{}'.format(labelfolder)
-            #dirname = "C:\\Users\\USER\\Desktop\\LSIL\\add"
             filenames = os.listdir(dirname)
             #only_name = filename.split('.')[0]
             #count = 0
