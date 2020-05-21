@@ -99,6 +99,7 @@ def train_model(model,image_datasets,dataloaders, criterion, optimizer, schedule
     print('Best val Acc: {:4f}'.format(best_acc))
     print('Best val Acc at: {} Epoch'.format(best_epoch))
     # 가장 나은 모델 가중치를 불러옴
+    fig_name  = './result/'+fig_name
     while os.path.isfile(fig_name+'_lossaccplot.png'):
         fig_name=fig_name+'-1'
     loss_accuracy_plot(num_epochs,train_loss_list,val_loss_list,train_acc_list,val_acc_list,fig_name)
@@ -126,7 +127,7 @@ def confusion_mat(model,fig_name, dataloaders,class_names):
     plot_confusion_matrix(ground,pred,classes=np.array(class_names),normalize=True)
     while os.path.isfile(fig_name+'_confusion.png'):
         fig_name=fig_name+'-1'
-    plt.savefig(fig_name+"_confusion.png")
+    plt.savefig('./result/'+fig_name+"_confusion.png")
 
 def main():
     parser = argparse.ArgumentParser(description = 'Network')
@@ -196,7 +197,8 @@ def main():
         model_ft.classifier = nn.Linear(num_ftrs, args.class_num)
     else:
         print("Write Network Name")
-
+    if not os.path.isdir('./result'):
+        os.makedirs('./result')
     model_ft = model_ft.cuda()
     criterion = nn.CrossEntropyLoss()
     optimizer_ft = optim.Adam(model_ft.parameters(),lr = args.lr)
@@ -210,7 +212,7 @@ def main():
     print("time for train : ", time.time()-start)
     if args.gc == True:
         model = model_ft
-        outpath = './gc_'+args.network+'_'+args.gpu_id+'/'
+        outpath = './result/gc_'+args.network+'_'+args.gpu_id+'/'
         if not os.path.isdir(outpath):
             os.makedirs(outpath)
         use_fixed = True
