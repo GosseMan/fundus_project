@@ -156,7 +156,7 @@ def main():
     if args.class_num==3:
         data_dir = '../data/noiserm_split_480_under_aug_clahe'
     elif args.class_num==2:
-        data_dir = '../data/FUNDUS_480_SPLIT_AUG_BINARY'
+        data_dir = '../data/noiserm_split_480_binary_under_aug_clahe'
     image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])  for x in ['train', 'val']}
     dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=6,shuffle=True, num_workers=4) for x in ['train', 'val']}
     class_names = image_datasets['train'].classes
@@ -225,6 +225,8 @@ def main():
         model = model.cuda()
         #visualize(img_path, labelfolder)
         labellist = ['0ZERO', '1ONE', '2TWO']
+        if args.class_num==2
+            labellist = ['0ZERO','1ONE']
         #labelfolder = '0ZERO'
         for labelfolder in labellist:
             dirname = data_dir+'/val/{}'.format(labelfolder)
