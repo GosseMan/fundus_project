@@ -154,7 +154,7 @@ def main():
         ]),
     }
     if args.class_num==3:
-        data_dir = '../data/noiserm_split_480_under_aug_clahe'
+        data_dir = '../data/FUNDUS_DATA_SPLIT_UNDER_AUG_CLAHE'
     elif args.class_num==2:
         data_dir = '../data/noiserm_split_480_binary_under_aug_clahe'
     image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])  for x in ['train', 'val']}
@@ -207,7 +207,7 @@ def main():
     fig_name = args.network+'_'+args.gpu_id
     model_ft=train_model(model_ft,image_datasets,dataloaders,criterion,optimizer_ft,exp_lr_scheduler,fig_name, early_stopping=args.es,num_epochs=args.epochs)
     #visualize_model(model_ft)
-    torch.save(model_ft,'./'+args.gpu_id+'_'+args.network+'_model.pt')
+    torch.save(model_ft,'./result/'+args.gpu_id+'_'+args.network+'_model.pt')
     confusion_mat(model_ft,fig_name,dataloaders,class_names)
     print("time for train : ", time.time()-start)
     if args.gc == True:
@@ -225,7 +225,7 @@ def main():
         model = model.cuda()
         #visualize(img_path, labelfolder)
         labellist = ['0ZERO', '1ONE', '2TWO']
-        if args.class_num==2
+        if args.class_num==2:
             labellist = ['0ZERO','1ONE']
         #labelfolder = '0ZERO'
         for labelfolder in labellist:
