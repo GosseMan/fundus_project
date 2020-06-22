@@ -17,15 +17,19 @@ import time
 import argparse
 import gradcam
 import cv2
+import roc
+import torch.nn.functional as F
 start=time.time()
 
 
-def train_model(model,image_datasets,dataloaders, criterion, optimizer, scheduler,fig_name,early_stopping,num_epochs=100):
-    since = time.time()
-    train_loss_list = []
-    val_loss_list = []
-    train_acc_list = []
-    val_acc_list = []
+def train_model(
+        model,image_datasets, dataloaders, criterion, optimizer,
+    `        scheduler, fig_name, early_stopping, isroc, num_epochs=100 ):
+        since = time.time()
+        train_loss_list = []
+        val_loss_list = []
+        train_acc_list = []
+`   val_acc_list = []
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
     best_loss = 10000
@@ -35,31 +39,24 @@ def train_model(model,image_datasets,dataloaders, criterion, optimizer, schedule
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
-        # 각 에폭(epoch)은 학습 단계와 검증 단계를 갖습니다.
         for phase in ['train', 'val']:
             if phase == 'train':
-                model.train()  # 모델을 학습 모드로 설정
+                model.train()
             else:
-                model.eval()   # 모델을 평가 모드로 설정
+                model.eval()
             running_loss = 0.0
             running_corrects = 0
-            # 데이터를 반복
             for inputs, labels in dataloaders[phase]:
                 inputs = inputs.cuda()
                 labels = labels.cuda()
-                # 매개변수 경사도를 0으로 설정
                 optimizer.zero_grad()
-                # 순전파
-                # 학습 시에만 연산 기록을 추적
                 with torch.set_grad_enabled(phase == 'train'):
                     outputs = model(inputs)
                     _, preds = torch.max(outputs, 1)
                     loss = criterion(outputs, labels)
-                    # 학습 단계인 경우 역전파 + 최적화
                     if phase == 'train':
                         loss.backward()
                         optimizer.step()
-                # 통계
                 running_loss += loss.item() * inputs.size(0)
                 running_corrects += torch.sum(preds == labels.data)
             if phase == 'train':
@@ -72,11 +69,8 @@ def train_model(model,image_datasets,dataloaders, criterion, optimizer, schedule
             else:
                 val_loss_list.append(epoch_loss)
                 val_acc_list.append(epoch_acc)
-
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                 phase, epoch_loss, epoch_acc))
-
-            # 모델을 깊은 복사(deep copy)함
             if phase == 'val':
                 if prev_loss<epoch_loss:
                     earlystop=earlystop+1
@@ -104,8 +98,28 @@ def train_model(model,image_datasets,dataloaders, criterion, optimizer, schedule
         fig_name=fig_name+'-1'
     loss_accuracy_plot(num_epochs,train_loss_list,val_loss_list,train_acc_list,val_acc_list,fig_name)
     model.load_state_dict(best_model_wts)
-
     return model
+
+
+def roc_curve(model, dataloaders):
+    preds_list = []
+    labels_list = []
+    model.eval()
+    for i, (inputs, labels) in enumerate(dataloaders['val']):
+        labels_list = labels_list + labels.tolist()
+        inputs = inputs.cuda()
+        labels = labels.cuda()
+        # 매개변수 경사도를 0으로 설정
+        # 순전파
+        # 학습 시에만 연산 기록을 추적
+        outputs = model(inputs)
+        for out in outputs:
+            out = F.softmax(out,dim=0).tolist()
+            preds_list.append(out[1])
+        #_, preds = torch.max(outputs, 1)
+        #pred_list = preds.cpu().tolist()
+        #preds_list=preds_list+pred_list
+    roc.line1(preds_list,labels_list)
 
 
 def confusion_mat(model,fig_name, dataloaders,class_names):
@@ -122,12 +136,14 @@ def confusion_mat(model,fig_name, dataloaders,class_names):
             labels = labels.cuda()
             outputs = model(inputs)
             _, preds = torch.max(outputs, 1)
+
             preds=preds.cpu()
             pred=np.append(pred,preds.numpy())
     plot_confusion_matrix(ground,pred,classes=np.array(class_names),normalize=True)
     while os.path.isfile(fig_name+'_confusion.png'):
         fig_name=fig_name+'-1'
     plt.savefig('./result/'+fig_name+"_confusion.png")
+
 
 def main():
     parser = argparse.ArgumentParser(description = 'Network')
@@ -139,10 +155,9 @@ def main():
     parser.add_argument('--class_num',type=int,default=3,help='Class Number (default=3)')
     parser.add_argument('--es',type=bool,default=False,help='Early Stopping (default=False)')
     parser.add_argument('--gc',type=bool,default=False,help='GRAD-CAM (default=False)')
+    parser.add_argument('--roc',type=bool,default=False,help='ROC-curve (default=False)')
     args = parser.parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"]=args.gpu_id
-
-
     data_transforms = {
         'train': transforms.Compose([
             transforms.ToTensor(),
@@ -156,7 +171,7 @@ def main():
     if args.class_num==3:
         data_dir = '../data/FUNDUS_DATA_SPLIT_UNDER_AUG_CLAHE'
     elif args.class_num==2:
-        data_dir = '../data/noiserm_split_480_binary_under_aug_clahe'
+        data_dir = '../data/cbs'
     image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])  for x in ['train', 'val']}
     dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=6,shuffle=True, num_workers=4) for x in ['train', 'val']}
     class_names = image_datasets['train'].classes
@@ -203,9 +218,9 @@ def main():
     criterion = nn.CrossEntropyLoss()
     optimizer_ft = optim.Adam(model_ft.parameters(),lr = args.lr)
     steps = int(args.epochs*0.7)
-    exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft,step_size=steps,gamma=0.1)
+    exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft,step_size=70,gamma=0.1)
     fig_name = args.network+'_'+args.gpu_id
-    model_ft=train_model(model_ft,image_datasets,dataloaders,criterion,optimizer_ft,exp_lr_scheduler,fig_name, early_stopping=args.es,num_epochs=args.epochs)
+    model_ft=train_model(model_ft,image_datasets,dataloaders,criterion,optimizer_ft,exp_lr_scheduler,fig_name, early_stopping=args.es,isroc = args.roc,num_epochs=args.epochs)
     #visualize_model(model_ft)
     torch.save(model_ft,'./result/'+args.gpu_id+'_'+args.network+'_model.pt')
     confusion_mat(model_ft,fig_name,dataloaders,class_names)
@@ -220,13 +235,11 @@ def main():
         if use_fixed == True:
             for param in model.parameters():
                 param.requires_grad = True
-        # Split model in two parts
         model = model.eval()
         model = model.cuda()
-        #visualize(img_path, labelfolder)
         labellist = ['0ZERO', '1ONE', '2TWO']
         if args.class_num==2:
-            labellist = ['0ZERO','1ONE']
+            labellist = ['class0','class1']
         #labelfolder = '0ZERO'
         for labelfolder in labellist:
             dirname = data_dir+'/val/{}'.format(labelfolder)
@@ -241,7 +254,8 @@ def main():
                 #size_cropping(img,filename)
                 gradcam.visualize(fullpathname, labelfolder, model, outpath)
                 #count += 1
-
+    if args.roc == True:
+        roc_curve(model_ft,dataloaders)
 
 if __name__ == '__main__':
     main()

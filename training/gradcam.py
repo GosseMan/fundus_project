@@ -71,8 +71,7 @@ def cmap_map(function, cmap):
 def visualize(img_path, labelfolder,model,outpath):
     read_tensor = transforms.Compose([
         lambda x: Image.open(x),
-        lambda x: x.convert('RGB'),
-        transforms.Resize((480, 480)),
+        transforms.Lambda(lambda x: x.convert('RGB'))
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
                               std=[0.229, 0.224, 0.225]),
@@ -131,9 +130,7 @@ def main():
     if use_fixed == True:
         for param in model.parameters():
             param.requires_grad = True
-
     # Split model in two parts
-
     model = model.eval()
     model = model.cuda()
     #visualize(img_path, labelfolder)
