@@ -71,7 +71,7 @@ def cmap_map(function, cmap):
 def visualize(img_path, labelfolder,model,outpath):
     read_tensor = transforms.Compose([
         lambda x: Image.open(x),
-        transforms.Lambda(lambda x: x.convert('RGB'))
+        transforms.Lambda(lambda x: x.convert('RGB')),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
                               std=[0.229, 0.224, 0.225]),
