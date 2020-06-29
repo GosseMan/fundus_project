@@ -80,7 +80,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                 labels = labels.type(torch.FloatTensor)
                 print(labels)
                 labels = labels.cuda()
-                print(labels)
+                print(labels.size())
                 optimizer.zero_grad()
                 with torch.set_grad_enabled(phase == 'train'):
                     if use_meta == False:
@@ -93,8 +93,8 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                         outputs, out = model(inputs,age_list)
                         #print(out)
                     preds = outputs
-                    print(outputs)
-                    print(preds)
+                    #print(outputs)
+                    print(preds.size())
                     loss = criterion(outputs, labels)
                     if phase == 'train':
                         loss.backward()
