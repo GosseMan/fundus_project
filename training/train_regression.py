@@ -148,7 +148,6 @@ def main():
     parser.add_argument('--fine_tuning',type=bool,default=False,help='Fine Tuning (default=False)')
     parser.add_argument('--es',type=bool,default=False,help='Early Stopping (default=False)')
     parser.add_argument('--gc',type=bool,default=False,help='GRAD-CAM (default=False)')
-    parser.add_argument('--roc',type=bool,default=False,help='ROC-curve (default=False)')
     parser.add_argument('--batch',type=int, default=6,help='Batch_size (default=6)')
     parser.add_argument('--metadata',type=bool, default=False,help='Use metadata (default=False)')
     parser.add_argument('--data',type=str, help='Dataset directory name')
@@ -165,7 +164,7 @@ def main():
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
     }
-    data_dir = '../../data/'+args.datacd
+    data_dir = '../../data/'+args.data
     batch_size = args.batch
     image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])  for x in ['train', 'val']}
     dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size,shuffle=True, num_workers=4) for x in ['train', 'val']}
