@@ -92,7 +92,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                         age_list = torch.Tensor(age_list).cuda()
                         outputs, out = model(inputs,age_list)
                         #print(out)
-                    preds = outputs.unsqueeze(1)
+                    preds = outputs.squeeze(1)
                     #print(outputs)
                     print(preds.size())
                     loss = criterion(outputs, labels)
