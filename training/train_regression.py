@@ -97,7 +97,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                     preds = outputs.squeeze(1)
                     #print(outputs)
                     #print(preds.size())
-                    print(labels,preds)
+                    #print(labels,preds)
                     loss = criterion(preds, labels)
                     if phase == 'train':
                         loss.backward()
@@ -173,7 +173,7 @@ def scatter_plot(model,fig_name, dataloaders,class_names, batch_size, use_meta):
 
 
         plt.xlim(-10, 110);    plt.ylim(-10, 110)
-        plt.scatter(ground.data.numpy(), pred.data.numpy())
+        plt.scatter(ground, pred)
         plt.savefig('../../scatter.jpg')
 
     plot_confusion_matrix(ground,pred,classes=np.array(class_names),normalize=True)
@@ -266,7 +266,6 @@ def main():
     model_ft = model_ft.cuda()
     criterion = nn.L1Loss()
     optimizer_ft = optim.Adam(model_ft.parameters(),lr = args.lr)
-    steps = int(args.epochs*0.7)
     exp_lr_scheduler = lr_scheduler.MultiStepLR(optimizer_ft,milestones=[10,20],gamma=0.1)
     fig_name = args.network+'_'+args.gpu_id
     model_ft=train_model(model_ft,image_datasets,dataloaders,batch_size, criterion,optimizer_ft,
