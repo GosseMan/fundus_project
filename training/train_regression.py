@@ -103,7 +103,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                         loss.backward()
                         optimizer.step()
                 running_loss += loss.item() * inputs.size(0)
-                running_corrects += torch.sum(abs(preds - labels.data)<5)
+                running_corrects += torch.sum(abs(preds - labels.data)<0.05)
             if phase == 'train':
                 scheduler.step()
             epoch_loss = running_loss / dataset_sizes[phase]
@@ -145,6 +145,38 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
     loss_accuracy_plot(num_epochs,train_loss_list,val_loss_list,train_acc_list,val_acc_list,fig_name)
     model.load_state_dict(best_model_wts)
     return model
+
+
+
+def scatter_plot(model,fig_name, dataloaders,class_names, batch_size, use_meta):
+    was_training = model.training
+    model.eval()
+    images_so_far = 0
+    fig = plt.figure()
+    pred=np.array([],dtype='int64')
+    ground=np.array([],dtype='int64')
+    with torch.no_grad():
+        for i, (inputs, labels) in enumerate(dataloaders['val']):
+            ground=np.append(ground,labels.numpy())
+            inputs = inputs.cuda()
+            labels = labels.cuda()
+            if use_meta == False:
+                 outputs = model(inputs)
+            else:
+                age_list = dataloaders['val'].dataset.samples[batch_size*i:batch_size*i+len(inputs)]
+                for i in range(len(age_list)):
+                    age_list[i] = int(age_list[i][0].split('/')[-1].split('-')[-1].split('.')[0])
+                age_list = torch.Tensor(age_list).cuda()
+                outputs, _ = model(inputs,age_list)
+            _, preds = torch.max(outputs, 1)
+            preds=preds.cpu()
+            pred=np.append(pred,preds.numpy())
+
+    plot_confusion_matrix(ground,pred,classes=np.array(class_names),normalize=True)
+    while os.path.isfile(fig_name+'_confusion.png'):
+        fig_name=fig_name+'-1'
+    plt.savefig('./result/'+fig_name+"_confusion.png")
+
 
 
 def main():
