@@ -76,9 +76,11 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
 
             for i, (inputs, labels) in enumerate(dataloaders[phase],0):
                 inputs = inputs.cuda()
+                print(labels)
                 labels = labels.type(torch.FloatTensor)
                 print(labels)
                 labels = labels.cuda()
+                print(labels)
                 optimizer.zero_grad()
                 with torch.set_grad_enabled(phase == 'train'):
                     if use_meta == False:
