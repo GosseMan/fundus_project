@@ -153,24 +153,28 @@ def scatter_plot(model,fig_name, dataloaders,class_names, batch_size, use_meta):
     model.eval()
     images_so_far = 0
     fig = plt.figure()
-    pred=np.array([],dtype='int64')
-    ground=np.array([],dtype='int64')
+    pred=np.array([],dtype='float16')
+    ground=np.array([],dtype='float16')
     with torch.no_grad():
         for i, (inputs, labels) in enumerate(dataloaders['val']):
             ground=np.append(ground,labels.numpy())
             inputs = inputs.cuda()
+            labels = labels.type(torch.FloatTensor)
+            labels = labels/100
+            #print(labels)
             labels = labels.cuda()
             if use_meta == False:
                  outputs = model(inputs)
-            else:
-                age_list = dataloaders['val'].dataset.samples[batch_size*i:batch_size*i+len(inputs)]
-                for i in range(len(age_list)):
-                    age_list[i] = int(age_list[i][0].split('/')[-1].split('-')[-1].split('.')[0])
-                age_list = torch.Tensor(age_list).cuda()
-                outputs, _ = model(inputs,age_list)
-            _, preds = torch.max(outputs, 1)
+            preds = outputs.squeeze(1)
             preds=preds.cpu()
             pred=np.append(pred,preds.numpy())
+        ground = ground*100
+        pred = pred*100
+
+        
+        plt.xlim(-10, 110);    plt.ylim(-10, 110)
+        plt.scatter(ground.data.numpy(), pred.data.numpy())
+        plt.savefig('../../scatter.jpg')
 
     plot_confusion_matrix(ground,pred,classes=np.array(class_names),normalize=True)
     while os.path.isfile(fig_name+'_confusion.png'):
