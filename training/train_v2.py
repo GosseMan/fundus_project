@@ -77,7 +77,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
             running_corrects = 0
 
             for i, (inputs, labels) in enumerate(dataloaders[phase],0):
-                print(inputs)
+                print(inputs.size())
                 inputs = inputs.cuda()
                 labels = labels.cuda()
                 optimizer.zero_grad()
