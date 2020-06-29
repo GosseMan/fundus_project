@@ -77,14 +77,12 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
             running_corrects = 0
 
             for i, (inputs, labels) in enumerate(dataloaders[phase],0):
-                print(inputs.size())
                 inputs = inputs.cuda()
                 labels = labels.cuda()
                 optimizer.zero_grad()
                 with torch.set_grad_enabled(phase == 'train'):
                     if use_meta == False:
                          outputs = model(inputs)
-                         print(outputs)
                     else:
                         age_list = dataloaders[phase].dataset.samples[batch_size*i:batch_size*i+len(inputs)]
                         for i in range(len(age_list)):

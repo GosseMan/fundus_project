@@ -11,13 +11,11 @@ import matplotlib.pyplot as plt
 import time
 import os
 import copy
-from confusion_matrix import plot_confusion_matrix
 from accplot import loss_accuracy_plot
 import time
 import argparse
 import gradcam
 import cv2
-import roc
 import torch.nn.functional as F
 start=time.time()
 class MyDensenet169(nn.Module):
@@ -91,12 +89,13 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                         outputs, out = model(inputs,age_list)
                         #print(out)
                     _, preds = torch.max(outputs, 1)
+                    print(preds)
                     loss = criterion(outputs, labels)
                     if phase == 'train':
                         loss.backward()
                         optimizer.step()
                 running_loss += loss.item() * inputs.size(0)
-                running_corrects += torch.sum(preds == labels.data)
+                running_corrects += torch.sum(abs(preds - labels.data)<5)
             if phase == 'train':
                 scheduler.step()
             epoch_loss = running_loss / dataset_sizes[phase]
@@ -140,64 +139,6 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
     return model
 
 
-def roc_curve(model, dataloaders,batch_size, use_meta):
-    preds_list = []
-    labels_list = []
-    model.eval()
-    for i, (inputs, labels) in enumerate(dataloaders['val']):
-        labels_list = labels_list + labels.tolist()
-        inputs = inputs.cuda()
-        labels = labels.cuda()
-        # 매개변수 경사도를 0으로 설정
-        # 순전파
-        # 학습 시에만 연산 기록을 추적
-        if use_meta == False:
-             outputs = model(inputs)
-        else:
-            age_list = dataloaders['val'].dataset.samples[batch_size*i:batch_size*i+len(inputs)]
-            for i in range(len(age_list)):
-                age_list[i] = int(age_list[i][0].split('/')[-1].split('-')[-1].split('.')[0])
-            age_list = torch.Tensor(age_list).cuda()
-            outputs = model(inputs,age_list)
-        for out in outputs:
-            out = F.softmax(out,dim=0).tolist()
-            preds_list.append(out[1])
-        #_, preds = torch.max(outputs, 1)
-        #pred_list = preds.cpu().tolist()
-        #preds_list=preds_list+pred_list
-    roc.line1(preds_list,labels_list)
-
-
-def confusion_mat(model,fig_name, dataloaders,class_names, batch_size, use_meta):
-    was_training = model.training
-    model.eval()
-    images_so_far = 0
-    fig = plt.figure()
-    pred=np.array([],dtype='int64')
-    ground=np.array([],dtype='int64')
-    with torch.no_grad():
-        for i, (inputs, labels) in enumerate(dataloaders['val']):
-            ground=np.append(ground,labels.numpy())
-            inputs = inputs.cuda()
-            labels = labels.cuda()
-            if use_meta == False:
-                 outputs = model(inputs)
-            else:
-                age_list = dataloaders['val'].dataset.samples[batch_size*i:batch_size*i+len(inputs)]
-                for i in range(len(age_list)):
-                    age_list[i] = int(age_list[i][0].split('/')[-1].split('-')[-1].split('.')[0])
-                age_list = torch.Tensor(age_list).cuda()
-                outputs, _ = model(inputs,age_list)
-            _, preds = torch.max(outputs, 1)
-            preds=preds.cpu()
-            pred=np.append(pred,preds.numpy())
-
-    plot_confusion_matrix(ground,pred,classes=np.array(class_names),normalize=True)
-    while os.path.isfile(fig_name+'_confusion.png'):
-        fig_name=fig_name+'-1'
-    plt.savefig('./result/'+fig_name+"_confusion.png")
-
-
 def main():
     parser = argparse.ArgumentParser(description = 'Network')
     parser.add_argument('--network', default='resnet152',type=str)
@@ -237,28 +178,28 @@ def main():
             for param in model_ft.parameters():
                 param.requires_grad = False
         num_ftrs = model_ft.fc.in_features
-        model_ft.fc = nn.Linear(num_ftrs, args.class_num)
+        model_ft.fc = nn.Linear(num_ftrs, 1)
     elif args.network == 'resnet50':
         model_ft = models.resnet50(pretrained=True)
         if not args.fine_tuning:
             for param in model_ft.parameters():
                 param.requires_grad = False
         num_ftrs = model_ft.fc.in_features
-        model_ft.fc = nn.Linear(num_ftrs, args.class_num)
+        model_ft.fc = nn.Linear(num_ftrs, 1)
     elif args.network == 'resnet152':
         model_ft = models.resnet152(pretrained=True)
         if not args.fine_tuning:
             for param in model_ft.parameters():
                 param.requires_grad = False
         num_ftrs = model_ft.fc.in_features
-        model_ft.fc = nn.Linear(num_ftrs, args.class_num)
+        model_ft.fc = nn.Linear(num_ftrs, 1)
     elif args.network == 'densenet121':
         model_ft = models.densenet121(pretrained=True)
         if not args.fine_tuning:
             for param in model_ft.parameters():
                 param.requires_grad = False
         num_ftrs = model_ft.classifier.in_features
-        model_ft.classifier = nn.Linear(num_ftrs, args.class_num)
+        model_ft.classifier = nn.Linear(num_ftrs, 1)
     elif args.network == 'densenet169':
         if args.metadata == False:
             model_ft = models.densenet169(pretrained=True)
@@ -266,7 +207,7 @@ def main():
                 for param in model_ft.parameters():
                     param.requires_grad = False
             num_ftrs = model_ft.classifier.in_features
-            model_ft.classifier = nn.Linear(num_ftrs, args.class_num)
+            model_ft.classifier = nn.Linear(num_ftrs, 1)
         else:
             model_ft = MyDensenet169(args.class_num)
             if not args.fine_tuning:
@@ -281,7 +222,7 @@ def main():
         os.makedirs('./result')
 
     model_ft = model_ft.cuda()
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.L1Loss()
     optimizer_ft = optim.Adam(model_ft.parameters(),lr = args.lr)
     steps = int(args.epochs*0.7)
     exp_lr_scheduler = lr_scheduler.MultiStepLR(optimizer_ft,milestones=[10,20],gamma=0.1)
@@ -291,7 +232,6 @@ def main():
                          isroc = args.roc,num_epochs=args.epochs)
     #visualize_model(model_ft)
     torch.save(model_ft,'./result/'+args.gpu_id+'_'+args.network+'_model.pt')
-    confusion_mat(model_ft,fig_name,dataloaders,class_names, batch_size, use_meta = args.metadata)
     print("time for train : ", time.time()-start)
     if args.gc == True:
         model = model_ft
@@ -322,8 +262,6 @@ def main():
                 #size_cropping(img,filename)
                 gradcam.visualize(fullpathname, labelfolder, model, outpath)
                 #count += 1
-    if args.roc == True:
-        roc_curve(model_ft,dataloaders, batch_size, use_meta = args.metadata)
 
 if __name__ == '__main__':
     main()
