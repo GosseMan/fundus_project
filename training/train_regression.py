@@ -95,7 +95,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                     preds = outputs.squeeze(1)
                     #print(outputs)
                     print(preds.size())
-                    loss = criterion(outputs, labels)
+                    loss = criterion(preds, labels)
                     if phase == 'train':
                         loss.backward()
                         optimizer.step()
