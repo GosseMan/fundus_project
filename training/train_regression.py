@@ -76,6 +76,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
 
             for i, (inputs, labels) in enumerate(dataloaders[phase],0):
                 inputs = inputs.cuda()
+                labels = float(labels)
                 labels = labels.cuda()
                 optimizer.zero_grad()
                 with torch.set_grad_enabled(phase == 'train'):
@@ -90,7 +91,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                         #print(out)
                     _, preds = torch.max(outputs, 1)
                     print(preds)
-                    loss = criterion(outputs, float(labels))
+                    loss = criterion(outputs, labels)
                     if phase == 'train':
                         loss.backward()
                         optimizer.step()
