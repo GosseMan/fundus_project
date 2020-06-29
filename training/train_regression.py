@@ -168,7 +168,7 @@ def scatter_plot(model,fig_name, dataloaders,class_names, batch_size, use_meta):
             preds = outputs.squeeze(1)
             preds=preds.cpu()
             pred=np.append(pred,preds.numpy())
-    ground = ground*100
+    ground = ground
     pred = pred*100
     print(ground)
     print(pred)
