@@ -75,10 +75,11 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
             running_corrects = 0
 
             for i, (inputs, labels) in enumerate(dataloaders[phase],0):
-                labels = labels/100
+
                 inputs = inputs.cuda()
                 #print(labels)
                 labels = labels.type(torch.FloatTensor)
+                labels = labels/100
                 #print(labels)
                 labels = labels.cuda()
                 #print(labels.size())
