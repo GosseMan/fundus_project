@@ -227,7 +227,7 @@ def main():
     fig_name = args.network+'_'+args.gpu_id
     model_ft=train_model(model_ft,image_datasets,dataloaders,batch_size, criterion,optimizer_ft,
                          exp_lr_scheduler,fig_name, early_stopping=args.es, use_meta = args.metadata,
-                         isroc = args.roc,num_epochs=args.epochs)
+                         isroc = False,num_epochs=args.epochs)
     #visualize_model(model_ft)
     torch.save(model_ft,'./result/'+args.gpu_id+'_'+args.network+'_model.pt')
     print("time for train : ", time.time()-start)
