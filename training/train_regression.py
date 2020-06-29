@@ -166,7 +166,7 @@ def main():
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
     }
-    data_dir = '../../data/'+args.data
+    data_dir = '../../data/'+args.datacd
     batch_size = args.batch
     image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])  for x in ['train', 'val']}
     dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size,shuffle=True, num_workers=4) for x in ['train', 'val']}
