@@ -168,13 +168,13 @@ def scatter_plot(model,fig_name, dataloaders,class_names, batch_size, use_meta):
             preds = outputs.squeeze(1)
             preds=preds.cpu()
             pred=np.append(pred,preds.numpy())
-        ground = ground*100
-        pred = pred*100
-
-
-        plt.xlim(-10, 110);    plt.ylim(-10, 110)
-        plt.scatter(ground, pred)
-        plt.savefig('../../scatter.jpg')
+    ground = ground*100
+    pred = pred*100
+    print(ground)
+    print(pred)
+    plt.xlim(-10, 110);    plt.ylim(-10, 110)
+    plt.scatter(ground, pred)
+    plt.savefig('../../scatter.jpg')
 
     plot_confusion_matrix(ground,pred,classes=np.array(class_names),normalize=True)
     while os.path.isfile(fig_name+'_confusion.png'):
@@ -281,15 +281,14 @@ def main():
         if not os.path.isdir(outpath):
             os.makedirs(outpath)
         use_fixed = True
-        model.__class__.__name__
+        #model.__class__.__name__
         if use_fixed == True:
             for param in model.parameters():
                 param.requires_grad = True
         model = model.eval()
         model = model.cuda()
-        labellist = ['0ZERO', '1ONE', '2TWO']
-        if args.class_num==2:
-            labellist = ['class0','class1']
+        labellist = os.listdir(data_dir+'/val')
+
         #labelfolder = '0ZERO'
         for labelfolder in labellist:
             dirname = data_dir+'/val/{}'.format(labelfolder)
