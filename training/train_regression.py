@@ -172,9 +172,12 @@ def scatter_plot(model,fig_name, dataloaders,class_names, batch_size, use_meta):
     pred = pred*100
     print(ground)
     print(pred)
-    plt.xlim(-10, 110);    plt.ylim(-10, 110)
+    plt.figure(figsize=(12,12))
+    plt.xlabel("Real")
+    plt.ylabel("Pred")
+    plt.xlim(-10, 100);    plt.ylim(-10, 100)
     plt.scatter(ground, pred)
-    plt.savefig('../../scatter.jpg')
+    plt.savefig('./result/scatter.jpg')
 
     #plot_confusion_matrix(ground,pred,classes=np.array(class_names),normalize=True)
     while os.path.isfile(fig_name+'_confusion.png'):
