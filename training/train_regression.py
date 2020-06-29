@@ -171,7 +171,7 @@ def scatter_plot(model,fig_name, dataloaders,class_names, batch_size, use_meta):
         ground = ground*100
         pred = pred*100
 
-        
+
         plt.xlim(-10, 110);    plt.ylim(-10, 110)
         plt.scatter(ground.data.numpy(), pred.data.numpy())
         plt.savefig('../../scatter.jpg')
@@ -274,6 +274,7 @@ def main():
                          isroc = False,num_epochs=args.epochs)
     #visualize_model(model_ft)
     torch.save(model_ft,'./result/'+args.gpu_id+'_'+args.network+'_model.pt')
+    scatter_plot(model_ft,fig_name,dataloaders,class_names, batch_size, use_meta = args.metadata)
     print("time for train : ", time.time()-start)
     if args.gc == True:
         model = model_ft
