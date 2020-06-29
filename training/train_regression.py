@@ -76,9 +76,9 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
 
             for i, (inputs, labels) in enumerate(dataloaders[phase],0):
                 inputs = inputs.cuda()
-                print(labels)
+                #print(labels)
                 labels = labels.type(torch.FloatTensor)
-                print(labels)
+                #print(labels)
                 labels = labels.cuda()
                 print(labels.size())
                 optimizer.zero_grad()
@@ -92,7 +92,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                         age_list = torch.Tensor(age_list).cuda()
                         outputs, out = model(inputs,age_list)
                         #print(out)
-                    preds = outputs
+                    preds = outputs.unsqueeze(1)
                     #print(outputs)
                     print(preds.size())
                     loss = criterion(outputs, labels)
