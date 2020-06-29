@@ -146,7 +146,6 @@ def main():
     parser.add_argument('--lr',type=float,default=0.001,help='Learning rate (default:0)')
     parser.add_argument('--epochs',type=int,default=100,help='Epochs (default:100)')
     parser.add_argument('--fine_tuning',type=bool,default=False,help='Fine Tuning (default=False)')
-    parser.add_argument('--class_num',type=int,default=3,help='Class Number (default=3)')
     parser.add_argument('--es',type=bool,default=False,help='Early Stopping (default=False)')
     parser.add_argument('--gc',type=bool,default=False,help='GRAD-CAM (default=False)')
     parser.add_argument('--roc',type=bool,default=False,help='ROC-curve (default=False)')
