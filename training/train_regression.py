@@ -93,6 +93,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                         outputs, out = model(inputs,age_list)
                         #print(out)
                     _, preds = torch.max(outputs, 1)
+                    print(outputs)
                     print(preds)
                     loss = criterion(outputs, labels)
                     if phase == 'train':
