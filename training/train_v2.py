@@ -84,6 +84,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                 with torch.set_grad_enabled(phase == 'train'):
                     if use_meta == False:
                          outputs = model(inputs)
+                         print(outputs)
                     else:
                         age_list = dataloaders[phase].dataset.samples[batch_size*i:batch_size*i+len(inputs)]
                         for i in range(len(age_list)):
