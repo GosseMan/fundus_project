@@ -176,7 +176,7 @@ def scatter_plot(model,fig_name, dataloaders,class_names, batch_size, use_meta):
     plt.scatter(ground, pred)
     plt.savefig('../../scatter.jpg')
 
-    plot_confusion_matrix(ground,pred,classes=np.array(class_names),normalize=True)
+    #plot_confusion_matrix(ground,pred,classes=np.array(class_names),normalize=True)
     while os.path.isfile(fig_name+'_confusion.png'):
         fig_name=fig_name+'-1'
     plt.savefig('./result/'+fig_name+"_confusion.png")
