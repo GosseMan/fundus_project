@@ -90,7 +90,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                         #print(out)
                     _, preds = torch.max(outputs, 1)
                     print(preds)
-                    loss = criterion(outputs, labels)
+                    loss = criterion(outputs, float(labels))
                     if phase == 'train':
                         loss.backward()
                         optimizer.step()
