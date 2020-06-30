@@ -43,7 +43,10 @@ def GradCAM(img, c, features_fn, classifier_fn):
     sal = torch.matmul(w, feats.view(N, H*W))
     print(sal.size())
     sal = sal.view(H, W).cpu().detach().numpy()
+    print(sal.size())
     sal = np.maximum(sal, 0)
+    print(sal.size())
+    print('------------')
     return sal
 
 def cmap_map(function, cmap):
