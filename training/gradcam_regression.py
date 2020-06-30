@@ -148,7 +148,7 @@ def main():
             fullpathname = os.path.join(dirname,filename)
             #img = cv2.imread(fullpathname)
             #size_cropping(img,filename)
-            gradcam_regression.visualize(fullpathname, labelfolder, model, outpath)
+            visualize(fullpathname, labelfolder, model, outpath)
 
 if __name__ == '__main__':
     main()
