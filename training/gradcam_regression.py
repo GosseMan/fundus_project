@@ -121,35 +121,34 @@ def visualize(img_path, labelfolder,model,outpath):
 
 
 def main():
+    data_dir = '../../data/age_resized_clahe_split'
     #model = pretrainedmodels.__dict__['inceptionresnetv2'](num_classes=1000, pretrained='imagenet')
-    model = torch.load('./model.pt')
-    outpath = './'
+    model = torch.load('./result/3_densenet169_model.pt')
+    model = model_ft
+    outpath = './gradcam/''
+    if not os.path.isdir(outpath):
+        os.makedirs(outpath)
     use_fixed = True
-    model.__class__.__name__
-
+    #model.__class__.__name__
     if use_fixed == True:
         for param in model.parameters():
             param.requires_grad = True
-    # Split model in two parts
     model = model.eval()
     model = model.cuda()
-    #visualize(img_path, labelfolder)
-    labellist = ['0ZERO', '1ONE', '2TWO']
-    #labelfolder = '0ZERO'
+    labellist = os.listdir(data_dir+'/val')
+        #labelfolder = '0ZERO'
     for labelfolder in labellist:
-        dirname = './check/ez/val/{}'.format(labelfolder)
-        #dirname = "C:\\Users\\USER\\Desktop\\LSIL\\add"
+        dirname = data_dir+'/val/{}'.format(labelfolder)
         filenames = os.listdir(dirname)
         #only_name = filename.split('.')[0]
-        count = 0
+        #count = 0
         if not os.path.isdir(outpath+labelfolder):
             os.makedirs(outpath+labelfolder)
         for filename in filenames:
             fullpathname = os.path.join(dirname,filename)
             #img = cv2.imread(fullpathname)
             #size_cropping(img,filename)
-            visualize(fullpathname, labelfolder, model, outpath)
-            count += 1
+            gradcam_regression.visualize(fullpathname, labelfolder, model, outpath)
 
 if __name__ == '__main__':
     main()
