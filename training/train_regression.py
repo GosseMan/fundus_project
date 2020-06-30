@@ -273,7 +273,7 @@ def main():
                          isroc = False,num_epochs=args.epochs)
     #visualize_model(model_ft)
     torch.save(model_ft,'./result/'+args.gpu_id+'_'+args.network+'_model.pt')
-    scatter_plot(model_ft,fig_name,dataloaders, batch_size, use_meta = args.metadata)
+    scatter_plot(model_ft,fig_name,dataloaders)
     print("time for train : ", time.time()-start)
     if args.gc == True:
         model = model_ft
