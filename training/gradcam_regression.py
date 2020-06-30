@@ -96,7 +96,7 @@ def visualize(img_path, labelfolder,model,outpath):
         features_fn = nn.Sequential(*list(model.children())[:-2])
         classifier_fn = nn.Sequential(*(list(model.children())[-2:-1] + [Flatten()] + list(model.children())[-1:]))
     img_tensor = read_tensor(img_path)
-    pp, cc = torch.topk(nn.Softmax(dim=1)(model(img_tensor.cuda())), 1)
+    pp, cc = torch.topk(model(img_tensor.cuda()), 1)
     light_jet = cmap_map(lambda x: x/2 + 0.5, matplotlib.cm.jet)
     img_name = os.path.basename(img_path)
 
@@ -107,7 +107,7 @@ def visualize(img_path, labelfolder,model,outpath):
         img = Image.open(img_path)
         sal = Image.fromarray(sal)
         sal = sal.resize(img.size, resample=Image.LINEAR)
-        plt.title('{}: {:.1f}%'.format(get_class_name(c), 100*float(p)))
+        plt.title('{}: {:.1f}%'.format('Predicted Age : ', 100*float(p)))
         plt.axis('off')
         plt.imshow(img)
         plt.imshow(np.array(sal), alpha=0.4, cmap=light_jet)
