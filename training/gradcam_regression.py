@@ -35,6 +35,7 @@ def GradCAM(img, c, features_fn, classifier_fn):
     #feats = features_fn(img.cuda())
     _, N, H, W = feats.size()
     out = classifier_fn(feats)
+    print(out.size())
     c_score = out[0, c]
     grads = torch.autograd.grad(c_score, feats)
     w = grads[0][0].mean(-1).mean(-1)
