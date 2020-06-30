@@ -76,7 +76,9 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
 
             for i, (inputs, labels) in enumerate(dataloaders[phase],0):
                 print(labels)
-                print({x:image_datasets[phase].classes[x] for x in labels})
+                for i in len(labels):
+                    labels[i] = image_datasets[phase].classes[i]
+
                 inputs = inputs.cuda()
                 #print(labels)
                 labels = labels.type(torch.FloatTensor)
