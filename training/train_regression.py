@@ -77,7 +77,8 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
             for i, (inputs, labels) in enumerate(dataloaders[phase],0):
                 print(labels)
                 for i in len(labels):
-                    labels[i] = image_datasets[phase].classes[i]
+                    labels[i] = int(image_datasets[phase].classes[i])
+                print(labels)
 
                 inputs = inputs.cuda()
                 #print(labels)
