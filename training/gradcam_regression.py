@@ -31,7 +31,7 @@ def get_class_name(c):
 
 def GradCAM(img, c, features_fn, classifier_fn):
     feats = features_fn(img.cuda())
-    print(features_fn.shape())
+    print(feats.shape())
     #feats = features_fn(img.cuda())
     _, N, H, W = feats.size()
     out = classifier_fn(feats)
