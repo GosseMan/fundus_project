@@ -125,7 +125,7 @@ def main():
     #model = pretrainedmodels.__dict__['inceptionresnetv2'](num_classes=1000, pretrained='imagenet')
     model = torch.load('./result/3_densenet169_model.pt')
     model = model_ft
-    outpath = './gradcam/''
+    outpath = './gradcam/'
     if not os.path.isdir(outpath):
         os.makedirs(outpath)
     use_fixed = True
