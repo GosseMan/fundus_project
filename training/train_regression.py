@@ -169,10 +169,14 @@ def scatter_plot(model,fig_name, dataloaders,image_datasets):
             pred=np.append(pred,preds.numpy())
 
     pred = pred*100
+    print('Real Age')
     print(ground)
     print(len(ground))
+    print()
+    print('Prediction')
     print(pred)
     print(len(pred))
+
     plt.figure(figsize=(12,12))
     plt.xlabel("Real")
     plt.ylabel("Pred")
