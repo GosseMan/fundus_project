@@ -14,7 +14,7 @@ import copy
 from accplot import loss_accuracy_plot
 import time
 import argparse
-import gradcam
+import gradcam_regression
 import cv2
 import torch.nn.functional as F
 start=time.time()
@@ -150,7 +150,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
 
 
 
-def scatter_plot(model,fig_name, dataloaders):
+def scatter_plot(model,fig_name, dataloaders,image_datasets):
     was_training = model.training
     model.eval()
     images_so_far = 0
@@ -277,7 +277,7 @@ def main():
                          isroc = False,num_epochs=args.epochs)
     #visualize_model(model_ft)
     torch.save(model_ft,'./result/'+args.gpu_id+'_'+args.network+'_model.pt')
-    scatter_plot(model_ft,fig_name,dataloaders)
+    scatter_plot(model_ft,fig_name,dataloaders,image_datasets)
     print("time for train : ", time.time()-start)
     if args.gc == True:
         model = model_ft
@@ -305,7 +305,7 @@ def main():
                 fullpathname = os.path.join(dirname,filename)
                 #img = cv2.imread(fullpathname)
                 #size_cropping(img,filename)
-                gradcam.visualize(fullpathname, labelfolder, model, outpath)
+                gradcam_regression.visualize(fullpathname, labelfolder, model, outpath)
                 #count += 1
 
 if __name__ == '__main__':
