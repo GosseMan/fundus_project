@@ -107,7 +107,7 @@ def visualize(img_path, labelfolder,model,outpath):
         img = Image.open(img_path)
         sal = Image.fromarray(sal)
         sal = sal.resize(img.size, resample=Image.LINEAR)
-        plt.title('{}: {:.1f}%'.format('Predicted Age : ', 100*float(p)))
+        plt.title('{}: {:.1f}'.format('Predicted Age ', 100*float(p)))
         plt.axis('off')
         plt.imshow(img)
         plt.imshow(np.array(sal), alpha=0.4, cmap=light_jet)
