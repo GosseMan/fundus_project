@@ -75,10 +75,8 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
             running_corrects = 0
 
             for i, (inputs, labels) in enumerate(dataloaders[phase],0):
-                print(labels)
                 for i in range(len(labels)):
                     labels[i] = int(image_datasets[phase].classes[labels[i]])
-                print(labels)
 
                 inputs = inputs.cuda()
                 #print(labels)
@@ -161,6 +159,8 @@ def scatter_plot(model,fig_name, dataloaders):
     ground=np.array([],dtype='float16')
     with torch.no_grad():
         for i, (inputs, labels) in enumerate(dataloaders['val']):
+            for i in range(len(labels)):
+                labels[i] = int(image_datasets['val'].classes[labels[i]])
             ground=np.append(ground,labels.numpy())
             inputs = inputs.cuda()
             outputs = model(inputs)
