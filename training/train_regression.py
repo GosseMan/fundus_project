@@ -148,7 +148,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
 
 
 
-def scatter_plot(model,fig_name, dataloaders,class_names, batch_size, use_meta):
+def scatter_plot(model,fig_name, dataloaders):
     was_training = model.training
     model.eval()
     images_so_far = 0
@@ -159,19 +159,16 @@ def scatter_plot(model,fig_name, dataloaders,class_names, batch_size, use_meta):
         for i, (inputs, labels) in enumerate(dataloaders['val']):
             ground=np.append(ground,labels.numpy())
             inputs = inputs.cuda()
-            labels = labels.type(torch.FloatTensor)
-            labels = labels/100
-            #print(labels)
-            labels = labels.cuda()
-            if use_meta == False:
-                 outputs = model(inputs)
+            outputs = model(inputs)
             preds = outputs.squeeze(1)
             preds=preds.cpu()
             pred=np.append(pred,preds.numpy())
-    ground = ground
+
     pred = pred*100
     print(ground)
+    print(len(ground))
     print(pred)
+    print(len(pred))
     plt.figure(figsize=(12,12))
     plt.xlabel("Real")
     plt.ylabel("Pred")
@@ -276,7 +273,7 @@ def main():
                          isroc = False,num_epochs=args.epochs)
     #visualize_model(model_ft)
     torch.save(model_ft,'./result/'+args.gpu_id+'_'+args.network+'_model.pt')
-    scatter_plot(model_ft,fig_name,dataloaders,class_names, batch_size, use_meta = args.metadata)
+    scatter_plot(model_ft,fig_name,dataloaders, batch_size, use_meta = args.metadata)
     print("time for train : ", time.time()-start)
     if args.gc == True:
         model = model_ft
