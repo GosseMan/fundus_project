@@ -292,9 +292,11 @@ def GradCAM2(img, c, features_fn, classifier_fn):
     print(len(grads))
     w = grads[0][0].mean(-1).mean(-1)
 
+
+
     print()
     print(w.size())
-    print('Seo weight : \n',w)
+    print('Seo weight : \n',w.reshape(1664))
     #print(w.size())
     sal = torch.matmul(w, feats.view(N, H*W))
 
