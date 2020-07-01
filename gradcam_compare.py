@@ -126,10 +126,10 @@ class GradCAM(_BaseWrapper):
         fmaps = self._find(self.fmap_pool, target_layer)
         grads = self._find(self.grad_pool, target_layer)
         weights = F.adaptive_avg_pool2d(grads, 1)
-
+        print(grads)
         gcam = torch.mul(fmaps, weights).sum(dim=1, keepdim=True)
         gcam = F.relu(gcam)
-        print(gcam)
+
         gcam = F.interpolate(gcam, self.image_shape, mode="bilinear", align_corners=False)
         B, C, H, W = gcam.shape
         gcam = gcam.view(B, -1)
@@ -284,6 +284,7 @@ def GradCAM2(img, c, features_fn, classifier_fn):
     #print(out.size())
     c_score = out[0, c]
     grads = torch.autograd.grad(c_score, feats)
+    print(grads)
     w = grads[0][0].mean(-1).mean(-1)
     #print(w.size())
     sal = torch.matmul(w, feats.view(N, H*W))
@@ -291,9 +292,8 @@ def GradCAM2(img, c, features_fn, classifier_fn):
     sal = sal.view(H, W).cpu().detach().numpy()
     #print(sal)
     sal = np.maximum(sal, 0)
-    print(sal)
 
-    
+
     #print(sal)
     #print('------------')
 
