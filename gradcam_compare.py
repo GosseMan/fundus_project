@@ -286,7 +286,7 @@ def GradCAM2(img, c, features_fn, classifier_fn):
     #print(out.size())
     c_score = out[0, c]
     grads = torch.autograd.grad(c_score, feats)
-    print(len(grads))
+    print(grads)
     w = grads[0][0].mean(-1).mean(-1)
 
 
@@ -299,7 +299,7 @@ def GradCAM2(img, c, features_fn, classifier_fn):
     #print(sal)
     sal = np.maximum(sal, 0)
 
-    print(sal.size())
+    print(sal.type())
 
     #print(sal)
     #print('------------')
