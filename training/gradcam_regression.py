@@ -96,7 +96,7 @@ def visualize(img_path, labelfolder,model,outpath):
         features_fn = nn.Sequential(*list(model.features.children())[:-1])
         classifier_fn = nn.Sequential(*(list(model.features.children())[-1:] + [Flatten()] + list(model.classifier.children())))
     elif arch == 'DenseNet':
-        features_fn = model.features
+        features_fn = model.features[:-1]
         classifier_fn = nn.Sequential(*([nn.AdaptiveAvgPool2d(1), Flatten()] + [model.classifier]))
         #classifier_fn = nn.Sequential(*([nn.AvgPool2d(7, 1), Flatten()] + [model.classifier]))
     elif arch == 'InceptionResNetV2':
@@ -129,11 +129,11 @@ def visualize(img_path, labelfolder,model,outpath):
 
 
 def main():
-    data_dir = './data/age_resized_clahe_split/val/30/'
+    data_dir = '../'
     #model = pretrainedmodels.__dict__['inceptionresnetv2'](num_classes=1000, pretrained='imagenet')
-    model = torch.load('./3_densenet169_model.pt')
+    model = torch.load('../3_densenet169_model.pt')
     #model = model_ft
-    outpath = './Seo_gc/'
+    outpath = '../Seo_gc_conv/'
     if not os.path.isdir(outpath+'30age'):
         os.makedirs(outpath+'30age')
     use_fixed = True
@@ -145,8 +145,8 @@ def main():
     model = model.cuda()
     #labellist = os.listdir(data_dir+'/val')
     #img_list = ['vk038873-clahe.jpg','vk042499-clahe.jpg','vk080873-clahe.jpg','vk123312-clahe.jpg','vk127891-clahe.jpg']
-    img_list = ['vk038873-clahe.jpg','vk042499-clahe.jpg']
-    labelfolder = '30age'
+    img_list = ['vk029159-clahe.jpg','vk029719-clahe.jpg', 'vk029742-clahe.jpg']
+    labelfolder = 'conv'
     #dirname = data_dir+'/val/{}'.format(labelfolder)
     dirname = data_dir
     filenames = img_list
