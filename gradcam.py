@@ -243,7 +243,7 @@ def main():
     model = torch.load('./3_densenet169_model.pt')
     model.eval()
 
-    target_layer_lst = ['features.denseblock4', 'features']
+    target_layer_lst = ['features.denseblock1','features.denseblock2','features.denseblock3']
     #target_layer_lst = ['features.denseblock4.denselayer32.conv1','features.denseblock4.denselayer32.norm2','features.denseblock4.denselayer32.relu2','features.denseblock4.denselayer32.conv2', 'features']
     # target_layer = "features.denseblock4.denselayer32"
     #img_list = ['vk038873-clahe.jpg','vk042499-clahe.jpg','vk080873-clahe.jpg','vk123312-clahe.jpg','vk127891-clahe.jpg']
