@@ -42,7 +42,7 @@ def GradCAM(img, c, features_fn, classifier_fn):
     #print(w.size())
     sal = torch.matmul(w, feats.view(N, H*W))
     #print(sal.size())
-    sal = F.relu(sal)
+    #sal = F.relu(sal)
     sal = sal.view(H, W).cpu().detach().numpy()
     #print(sal)
     sal = np.maximum(sal, 0)
@@ -135,8 +135,8 @@ def main():
     model = torch.load('../3_densenet169_model.pt')
     #model = model_ft
     outpath = '../Seo_gc_conv/'
-    if not os.path.isdir(outpath+'features'):
-        os.makedirs(outpath+'features')
+    if not os.path.isdir(outpath+'features_norelu'):
+        os.makedirs(outpath+'features_norelu')
     use_fixed = True
     #model.__class__.__name__
     if use_fixed == True:
