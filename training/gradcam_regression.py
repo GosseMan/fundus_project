@@ -147,7 +147,7 @@ def main():
     #labellist = os.listdir(data_dir+'/val')
     #img_list = ['vk038873-clahe.jpg','vk042499-clahe.jpg','vk080873-clahe.jpg','vk123312-clahe.jpg','vk127891-clahe.jpg']
     img_list = ['vk029159-clahe.jpg','vk029719-clahe.jpg', 'vk029742-clahe.jpg']
-    labelfolder = 'features'
+    labelfolder = 'features_norelu'
     #dirname = data_dir+'/val/{}'.format(labelfolder)
     dirname = data_dir
     filenames = img_list
