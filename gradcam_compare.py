@@ -401,7 +401,7 @@ def main():
         #img = cv2.imread(fullpathname)
         #size_cropping(img,filename)
         visualize(fullpathname, labelfolder, model, outpath)
-
+    model = torch.load('./3_densenet169_model.pt')
     model.eval()
     target_layer_lst = ['features']
     #target_layer_lst = ['features.denseblock1','features.denseblock2','features.denseblock3']
