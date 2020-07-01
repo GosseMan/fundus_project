@@ -125,6 +125,8 @@ class GradCAM(_BaseWrapper):
     def generate(self, target_layer):
         fmaps = self._find(self.fmap_pool, target_layer)
         grads = self._find(self.grad_pool, target_layer)
+        print('Oh feat size : \n', fmaps.size())
+        print('Oh grad size : \n', grads.size())
         weights = F.adaptive_avg_pool2d(grads, 1)
         #print(grads)
         print()
