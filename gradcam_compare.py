@@ -129,6 +129,7 @@ class GradCAM(_BaseWrapper):
 
         gcam = torch.mul(fmaps, weights).sum(dim=1, keepdim=True)
         gcam = F.relu(gcam)
+        print(gcam)
         gcam = F.interpolate(gcam, self.image_shape, mode="bilinear", align_corners=False)
         B, C, H, W = gcam.shape
         gcam = gcam.view(B, -1)
@@ -235,8 +236,11 @@ def execute_all(model, target_layer, img_path, gcam_path, paper_cmap=True):
 
 
 
-
-
+######################################################################################################################
+######################################################################################################################
+######################################################################################################################
+######################################################################################################################
+######################################################################################################################
 
 
 
@@ -287,6 +291,7 @@ def GradCAM2(img, c, features_fn, classifier_fn):
     sal = sal.view(H, W).cpu().detach().numpy()
     #print(sal)
     sal = np.maximum(sal, 0)
+    print(sal)
     #print(sal)
     #print('------------')
 
@@ -406,7 +411,7 @@ def main():
 
     model = torch.load('./3_densenet169_model.pt')
     model.eval()
-    target_layer_lst = ['features', 'features.denseblock4']
+    target_layer_lst = ['features']
     #target_layer_lst = ['features.denseblock1','features.denseblock2','features.denseblock3']
     #target_layer_lst = ['features.denseblock4.denselayer32.conv1','features.denseblock4.denselayer32.norm2','features.denseblock4.denselayer32.relu2','features.denseblock4.denselayer32.conv2', 'features']
     # target_layer = "features.denseblock4.denselayer32"
