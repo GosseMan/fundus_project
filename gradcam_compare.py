@@ -127,7 +127,9 @@ class GradCAM(_BaseWrapper):
         grads = self._find(self.grad_pool, target_layer)
         weights = F.adaptive_avg_pool2d(grads, 1)
         #print(grads)
-        print('Oh weight : \n',weights)
+        print()
+        print(weights.size())
+        print('---> Oh weight : \n',weights)
         gcam = torch.mul(fmaps, weights).sum(dim=1, keepdim=True)
         gcam = F.relu(gcam)
 
@@ -290,7 +292,7 @@ def GradCAM2(img, c, features_fn, classifier_fn):
     print(len(grads))
     w = grads[0][0].mean(-1).mean(-1)
 
-
+    print()
     print(w.size())
     print('Seo weight : \n',w)
     #print(w.size())
