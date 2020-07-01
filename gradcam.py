@@ -261,7 +261,7 @@ def main():
 
 
 
-            execute_all(model, target_layer, img_path, result_path, paper_cmap=True)
+            execute_all(model, target_layer, img_path, result_path, paper_cmap=False)
 
 
 if __name__ == "__main__":
