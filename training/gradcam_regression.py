@@ -31,22 +31,23 @@ def get_class_name(c):
 
 def GradCAM(img, c, features_fn, classifier_fn):
     feats = features_fn(img.cuda())
-    print(feats.size())
+    #print(feats.size())
     #feats = features_fn(img.cuda())
     _, N, H, W = feats.size()
     out = classifier_fn(feats)
-    print(out.size())
+    #print(out.size())
     c_score = out[0, c]
     grads = torch.autograd.grad(c_score, feats)
     w = grads[0][0].mean(-1).mean(-1)
-    print(w.size())
+    #print(w.size())
     sal = torch.matmul(w, feats.view(N, H*W))
-    print(sal.size())
+    #print(sal.size())
     sal = sal.view(H, W).cpu().detach().numpy()
-    print(sal)
+    #print(sal)
     sal = np.maximum(sal, 0)
-    print(sal)
-    print('------------')
+    #print(sal)
+    #print('------------')
+
     return sal
 
 def cmap_map(function, cmap):
@@ -128,13 +129,13 @@ def visualize(img_path, labelfolder,model,outpath):
 
 
 def main():
-    data_dir = '../../data/age_resized_clahe_split'
+    data_dir = './data/age_resized_clahe_split/val/30/'
     #model = pretrainedmodels.__dict__['inceptionresnetv2'](num_classes=1000, pretrained='imagenet')
-    model = torch.load('../../3_densenet169_model.pt')
+    model = torch.load('./3_densenet169_model.pt')
     #model = model_ft
-    outpath = './gradcam/'
-    if not os.path.isdir(outpath):
-        os.makedirs(outpath)
+    outpath = './Seo_gc/'
+    if not os.path.isdir(outpath+'30age'):
+        os.makedirs(outpath+'30age')
     use_fixed = True
     #model.__class__.__name__
     if use_fixed == True:
@@ -142,8 +143,23 @@ def main():
             param.requires_grad = True
     model = model.eval()
     model = model.cuda()
-    labellist = os.listdir(data_dir+'/val')
-        #labelfolder = '0ZERO'
+    #labellist = os.listdir(data_dir+'/val')
+    #img_list = ['vk038873-clahe.jpg','vk042499-clahe.jpg','vk080873-clahe.jpg','vk123312-clahe.jpg','vk127891-clahe.jpg']
+    img_list = ['vk038873-clahe.jpg','vk042499-clahe.jpg']
+    labelfolder = '30age'
+    #dirname = data_dir+'/val/{}'.format(labelfolder)
+    dirname = data_dir
+    filenames = img_list
+    #only_name = filename.split('.')[0]
+    #count = 0
+    if not os.path.isdir(outpath):
+        os.makedirs(outpath)
+    for filename in filenames:
+        fullpathname = os.path.join(dirname,filename)
+        #img = cv2.imread(fullpathname)
+        #size_cropping(img,filename)
+        visualize(fullpathname, labelfolder, model, outpath)
+    '''
     for labelfolder in labellist:
         dirname = data_dir+'/val/{}'.format(labelfolder)
         filenames = os.listdir(dirname)
@@ -156,6 +172,6 @@ def main():
             #img = cv2.imread(fullpathname)
             #size_cropping(img,filename)
             visualize(fullpathname, labelfolder, model, outpath)
-
+    '''
 if __name__ == '__main__':
     main()
