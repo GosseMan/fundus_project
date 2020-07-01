@@ -280,19 +280,23 @@ def GradCAM2(img, c, features_fn, classifier_fn):
     #print(feats.size())
     #feats = features_fn(img.cuda())
     _, N, H, W = feats.size()
+    print(feats.size())
     out = classifier_fn(feats)
+    print(out.size())
     #print(out.size())
     c_score = out[0, c]
     grads = torch.autograd.grad(c_score, feats)
     print(grads)
     w = grads[0][0].mean(-1).mean(-1)
+    print(w.size())
     #print(w.size())
     sal = torch.matmul(w, feats.view(N, H*W))
+
     #print(sal.size())
     sal = sal.view(H, W).cpu().detach().numpy()
     #print(sal)
     sal = np.maximum(sal, 0)
-
+    print(sal.size())
 
     #print(sal)
     #print('------------')
