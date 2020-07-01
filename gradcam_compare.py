@@ -125,12 +125,10 @@ class GradCAM(_BaseWrapper):
     def generate(self, target_layer):
         fmaps = self._find(self.fmap_pool, target_layer)
         grads = self._find(self.grad_pool, target_layer)
-        print('Oh feat size : \n', fmaps.size())
-        print('Oh grad size : \n', grads.size())
+
         weights = F.adaptive_avg_pool2d(grads, 1)
         #print(grads)
-        print()
-        print(weights.size())
+
         print('---> Oh weight : \n',weights)
         gcam = torch.mul(fmaps, weights).sum(dim=1, keepdim=True)
         gcam = F.relu(gcam)
@@ -285,20 +283,19 @@ def GradCAM2(img, c, features_fn, classifier_fn):
     #print(feats.size())
     #feats = features_fn(img.cuda())
     _, N, H, W = feats.size()
-    print(feats.size())
+
     out = classifier_fn(feats)
-    print(out.size())
+
     #print(out.size())
     c_score = out[0, c]
     grads = torch.autograd.grad(c_score, feats)
-    print(len(grads))
+
     w = grads[0][0].mean(-1).mean(-1)
 
 
 
-    print()
-    print(w.size())
-    print('Seo weight : \n',w.reshape(1664))
+
+    print('---> Seo weight : \n',w.reshape(1664))
     #print(w.size())
     sal = torch.matmul(w, feats.view(N, H*W))
 
@@ -307,7 +304,6 @@ def GradCAM2(img, c, features_fn, classifier_fn):
     #print(sal)
     sal = np.maximum(sal, 0)
 
-    print(sal.shape)
 
     #print(sal)
     #print('------------')
