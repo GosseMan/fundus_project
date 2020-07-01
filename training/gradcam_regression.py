@@ -42,7 +42,6 @@ def GradCAM(img, c, features_fn, classifier_fn):
     #print(w.size())
     sal = torch.matmul(w, feats.view(N, H*W))
     #print(sal.size())
-    sal = F.relu(sal)
     sal = sal.view(H, W).cpu().detach().numpy()
     #print(sal)
     sal = np.maximum(sal, 0)

@@ -205,12 +205,13 @@ def save_gradcam(file_path, region, raw_image, paper_cmap=False):
 
     region = region.cpu().numpy()
     cmap = cm.jet_r(region)[..., :3] * 255.0
+    cv2.imwrite(file_path, np.uint8(region))
     if paper_cmap:
         alpha = region[..., None]
         region = alpha * cmap + (1 - alpha) * raw_image
     else:
         region = (cmap.astype(np.float) + raw_image.astype(np.float)) / 2
-    cv2.imwrite(file_path, np.uint8(region))
+    #cv2.imwrite(file_path, np.uint8(region))
 
 
 def execute_all(model, target_layer, img_path, gcam_path, paper_cmap=True):
@@ -240,7 +241,7 @@ def main():
     #model = models.load(model_type)
     model.load_state_dict(torch.load(model_path))
     '''
-    model = torch.load('./3_densenet169_model_s.pt')
+    model = torch.load('./3_densenet169_model.pt')
     model.eval()
     target_layer_lst = ['features.denseblock4','features']
 
@@ -250,15 +251,15 @@ def main():
     #img_list = ['vk038873-clahe.jpg','vk042499-clahe.jpg','vk080873-clahe.jpg','vk123312-clahe.jpg','vk127891-clahe.jpg']
     #img_path = "data/age_resized_clahe_split/val/vk034698.jpg"
     img_list = ['vk029159-clahe.jpg','vk029719-clahe.jpg', 'vk029742-clahe.jpg']
-    if not os.path.isdir('./Oh_gc_sex'):
-        os.makedirs('./Oh_gc_sex')
+    if not os.path.isdir('./Oh_sali'):
+        os.makedirs('./Oh_sali')
     for img in img_list:
         img_path = './'+img
         print(img_path)
 
         for target_layer in target_layer_lst:
 
-            result_path = "./Oh_gc_sex/"+img.split('.')[0]+'_'+target_layer+'.jpg'
+            result_path = "./Oh_sali/"+img.split('.')[0]+'_'+target_layer+'.jpg'
 
 
 
