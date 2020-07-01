@@ -205,7 +205,8 @@ def save_gradcam(file_path, region, raw_image, paper_cmap=False):
 
     region = region.cpu().numpy()
     cmap = cm.jet_r(region)[..., :3] * 255.0
-    cv2.imwrite(file_path, np.uint8(region))
+
+    cv2.imwrite(file_path, np.uint8(cmap))
     if paper_cmap:
         alpha = region[..., None]
         region = alpha * cmap + (1 - alpha) * raw_image
