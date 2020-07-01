@@ -243,20 +243,20 @@ def main():
     model = torch.load('./3_densenet169_model.pt')
     model.eval()
 
-    target_layer_lst = ['features.denseblock4', 'features']
+    target_layer_lst = ['features.denseblock4.conv1','features.denseblock4.norm2','features.denseblock4.relu2','features.denseblock4.conv2', 'features']
     # target_layer = "features.denseblock4.denselayer32"
     #img_list = ['vk038873-clahe.jpg','vk042499-clahe.jpg','vk080873-clahe.jpg','vk123312-clahe.jpg','vk127891-clahe.jpg']
     #img_path = "data/age_resized_clahe_split/val/vk034698.jpg"
     img_list = ['vk029159-clahe.jpg','vk029719-clahe.jpg', 'vk029742-clahe.jpg']
-    if not os.path.isdir('./gc'):
-        os.makedirs('./gc')
+    if not os.path.isdir('./Oh_gc'):
+        os.makedirs('./Oh_gc')
     for img in img_list:
         img_path = './'+img
         print(img_path)
 
         for target_layer in target_layer_lst:
 
-            result_path = "./gc/"+img.split('.')[0]+'_'+target_layer+'.jpg'
+            result_path = "./Oh_gc/"+img.split('.')[0]+'_'+target_layer+'.jpg'
 
 
 
