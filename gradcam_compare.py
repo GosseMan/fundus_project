@@ -127,6 +127,7 @@ class GradCAM(_BaseWrapper):
         grads = self._find(self.grad_pool, target_layer)
         weights = F.adaptive_avg_pool2d(grads, 1)
         #print(grads)
+        print('Oh weight : \n',weights)
         gcam = torch.mul(fmaps, weights).sum(dim=1, keepdim=True)
         gcam = F.relu(gcam)
 
@@ -291,6 +292,7 @@ def GradCAM2(img, c, features_fn, classifier_fn):
 
 
     print(w.size())
+    print('Seo weight : \n',w)
     #print(w.size())
     sal = torch.matmul(w, feats.view(N, H*W))
 
@@ -401,7 +403,8 @@ def main():
     model = model.cuda()
     #labellist = os.listdir(data_dir+'/val')
     #img_list = ['vk038873-clahe.jpg','vk042499-clahe.jpg','vk080873-clahe.jpg','vk123312-clahe.jpg','vk127891-clahe.jpg']
-    img_list = ['vk029159-clahe.jpg','vk029719-clahe.jpg', 'vk029742-clahe.jpg']
+    #img_list = ['vk029159-clahe.jpg','vk029719-clahe.jpg', 'vk029742-clahe.jpg']
+    img_list = ['vk029159-clahe.jpg']
     labelfolder = 'seo'
     #dirname = data_dir+'/val/{}'.format(labelfolder)
     dirname = data_dir
