@@ -412,7 +412,7 @@ def main():
     # target_layer = "features.denseblock4.denselayer32"
     #img_list = ['vk038873-clahe.jpg','vk042499-clahe.jpg','vk080873-clahe.jpg','vk123312-clahe.jpg','vk127891-clahe.jpg']
     if not os.path.isdir('./gc_compare/Oh'):
-        os.makedirs('./gc_compare/OH')
+        os.makedirs('./gc_compare/Oh')
     for img in img_list:
         img_path = './'+img
         print(img_path)
