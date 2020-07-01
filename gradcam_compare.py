@@ -395,7 +395,8 @@ def visualize(img_path, labelfolder,model,outpath):
 def main():
     data_dir = './'
     #model = pretrainedmodels.__dict__['inceptionresnetv2'](num_classes=1000, pretrained='imagenet')
-    model = torch.load('./3_densenet169_model.pt')
+
+    model = torch.load('./3_densenet169_model_s.pt')
     #model = model_ft
     outpath = './gc_compare/'
     if not os.path.isdir(outpath+'seo'):
