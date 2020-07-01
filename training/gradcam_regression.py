@@ -96,7 +96,7 @@ def visualize(img_path, labelfolder,model,outpath):
         features_fn = nn.Sequential(*list(model.features.children())[:-1])
         classifier_fn = nn.Sequential(*(list(model.features.children())[-1:] + [Flatten()] + list(model.classifier.children())))
     elif arch == 'DenseNet':
-        features_fn = model.features[:-1]
+        features_fn = model.features
         classifier_fn = nn.Sequential(*([nn.AdaptiveAvgPool2d(1), Flatten()] + [model.classifier]))
         #classifier_fn = nn.Sequential(*([nn.AvgPool2d(7, 1), Flatten()] + [model.classifier]))
     elif arch == 'InceptionResNetV2':
@@ -134,8 +134,8 @@ def main():
     model = torch.load('../3_densenet169_model.pt')
     #model = model_ft
     outpath = '../Seo_gc_conv/'
-    if not os.path.isdir(outpath+'conv'):
-        os.makedirs(outpath+'conv')
+    if not os.path.isdir(outpath+'feature'):
+        os.makedirs(outpath+'feature')
     use_fixed = True
     #model.__class__.__name__
     if use_fixed == True:
@@ -146,7 +146,7 @@ def main():
     #labellist = os.listdir(data_dir+'/val')
     #img_list = ['vk038873-clahe.jpg','vk042499-clahe.jpg','vk080873-clahe.jpg','vk123312-clahe.jpg','vk127891-clahe.jpg']
     img_list = ['vk029159-clahe.jpg','vk029719-clahe.jpg', 'vk029742-clahe.jpg']
-    labelfolder = 'conv'
+    labelfolder = 'feature'
     #dirname = data_dir+'/val/{}'.format(labelfolder)
     dirname = data_dir
     filenames = img_list
