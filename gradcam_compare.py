@@ -271,7 +271,7 @@ def get_class_name(c):
     return ' '.join(labels[c].split(',')[0].split()[1:])
 
 
-def GradCAM(img, c, features_fn, classifier_fn):
+def GradCAM2(img, c, features_fn, classifier_fn):
     feats = features_fn(img.cuda())
     #print(feats.size())
     #feats = features_fn(img.cuda())
@@ -353,7 +353,7 @@ def visualize(img_path, labelfolder,model,outpath):
     for i, (p, c) in enumerate(zip(pp[0], cc[0])):
         plt.figure(figsize=(10, 10))
         plt.subplot(1, 1, 1)
-        sal = GradCAM(img_tensor, int(c), features_fn, classifier_fn)
+        sal = GradCAM2(img_tensor, int(c), features_fn, classifier_fn)
         img = Image.open(img_path)
         sal = Image.fromarray(sal)
         #sal = sal.resize(img.size, resample=Image.LINEAR)
@@ -401,9 +401,12 @@ def main():
         #img = cv2.imread(fullpathname)
         #size_cropping(img,filename)
         visualize(fullpathname, labelfolder, model, outpath)
+
+
+
     model = torch.load('./3_densenet169_model.pt')
     model.eval()
-    target_layer_lst = ['features']
+    target_layer_lst = ['features', 'features.denseblock4']
     #target_layer_lst = ['features.denseblock1','features.denseblock2','features.denseblock3']
     #target_layer_lst = ['features.denseblock4.denselayer32.conv1','features.denseblock4.denselayer32.norm2','features.denseblock4.denselayer32.relu2','features.denseblock4.denselayer32.conv2', 'features']
     # target_layer = "features.denseblock4.denselayer32"
