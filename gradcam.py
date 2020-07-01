@@ -240,7 +240,7 @@ def main():
     #model = models.load(model_type)
     model.load_state_dict(torch.load(model_path))
     '''
-    model = torch.load('./3_densenet169_model.pt')
+    model = torch.load('./3_densenet169_model_s.pt')
     model.eval()
 
     target_layer_lst = ['features.denseblock1','features.denseblock2','features.denseblock3']
