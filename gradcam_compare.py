@@ -296,7 +296,7 @@ def GradCAM2(img, c, features_fn, classifier_fn):
     sal = sal.view(H, W).cpu().detach().numpy()
     #print(sal)
     sal = np.maximum(sal, 0)
-    print(sal.size())
+    print(sal)
 
     #print(sal)
     #print('------------')
