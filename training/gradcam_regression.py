@@ -135,7 +135,7 @@ def main():
     model = torch.load('../3_densenet169_model.pt')
     #model = model_ft
     outpath = '../Seo_gc_conv/'
-    if not os.path.isdir(outpath+'features):
+    if not os.path.isdir(outpath+features):
         os.makedirs(outpath+'features')
     use_fixed = True
     #model.__class__.__name__
