@@ -206,8 +206,8 @@ def save_gradcam(file_path, region, raw_image, paper_cmap=False):
     prob = 0.1
     prediction = 'a'
     region = region.cpu().numpy()
+    cmap = cm.jet_r(region)[..., :3] * 255.0
     if paper_cmap:
-        cmap = cm.jet_r(region)[..., :3] * 255.0
         alpha = region[..., None]
         region = alpha * cmap + (1 - alpha) * raw_image
     else:
