@@ -182,9 +182,11 @@ def cal_gradcam(model, image, target_layer):
 
     gcam = GradCAM(model=model)
     probs, ids = gcam.forward(image)
+    print('ids : ' , ids[0])
     ids_ = ids[0, 0].view(1, 1).to(device)
     print ('probs : ' , probs[0])
     print('ids : ' , ids[0])
+    print('ids : ' , ids[0,0].VIEW(1,1))
     gcam.backward(ids=ids_)
 
     regions = gcam.generate(target_layer=target_layer)
