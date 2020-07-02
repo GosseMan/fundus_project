@@ -236,7 +236,7 @@ def execute_all(model, target_layer, img_path, gcam_path, paper_cmap=True):
 
     image, raw_image = load_image(img_path)
     region = cal_gradcam(model, image, target_layer)
-    save_gradcam(file_path=gcam_path, region=region, raw_image=raw_imagepaper,paper_cmap=paper_cmap)
+    save_gradcam(file_path=gcam_path, region=region, raw_image=raw_image,paper_cmap=paper_cmap)
 
 
 def main():
