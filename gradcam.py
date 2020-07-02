@@ -42,7 +42,7 @@ from torch.nn import functional as F
 from torchvision import transforms
 import numpy as np
 import matplotlib.cm as cm
-
+import matplotlib.pyplot as plt
 import cv2
 #import models
 
