@@ -186,7 +186,7 @@ def cal_gradcam(model, image, target_layer):
     gcam.backward(ids=ids_)
 
     regions = gcam.generate(target_layer=target_layer)
-    del gcam
+
     return regions[0, 0], probs[0,0].item(), ids[0,0].item()
 
 
@@ -216,7 +216,7 @@ def save_gradcam(file_path, region, raw_image, prob, pred, paper_cmap=False):
     plt.axis('off')
     plt.tight_layout()
     plt.savefig(file_path,bbox_inces='tight',pad_inches=0,dpi=100)
-
+    plt.close()
 def execute_all(model, target_layer, img_path, gcam_path, paper_cmap=True):
     """Execute the whole process at once
 
