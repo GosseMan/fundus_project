@@ -270,7 +270,7 @@ def main():
             result_path = "./Oh_sali/"+img.split('.')[0]+'_'+target_layer+'.jpg'
 
             image, raw_image = load_image(img_path)
-            print(model(image))
+            print(F.softmax(model(image))
             execute_all(model, target_layer, img_path, result_path, paper_cmap=False)
 
 
