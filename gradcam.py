@@ -182,15 +182,11 @@ def cal_gradcam(model, image, target_layer):
 
     gcam = GradCAM(model=model)
     probs, ids = gcam.forward(image)
-    print('ids1 : ' , ids[0])
     ids_ = ids[0, 0].view(1, 1).to(device)
-    print ('probs : ' , probs[0,0].item())
-    print('ids2 : ' , ids[0])
-    print('final ids3 : ' , ids[0,0].item())
     gcam.backward(ids=ids_)
 
     regions = gcam.generate(target_layer=target_layer)
-    return regions[0, 0]
+    return regions[0, 0], probs[0,0].item(), ids[0,0].item()
 
 
 def save_gradcam(file_path, region, raw_image, paper_cmap=False):
@@ -237,7 +233,7 @@ def execute_all(model, target_layer, img_path, gcam_path, paper_cmap=True):
     """
 
     image, raw_image = load_image(img_path)
-    region = cal_gradcam(model, image, target_layer)
+    region, prob, cls = cal_gradcam(model, image, target_layer)
     save_gradcam(file_path=gcam_path, region=region, raw_image=raw_image,paper_cmap=paper_cmap)
 
 
