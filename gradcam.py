@@ -218,7 +218,7 @@ def save_gradcam(file_path, region, raw_image, paper_cmap=False):
     plt.title('{}: {:.1f}%'.format(prediction, prob))
     plt.axis('off')
     plt.tight_layout()
-    plt.savefig(filename,bbox_inces='tight',pad_inches=0,dpi=100)
+    plt.savefig(file_path,bbox_inces='tight',pad_inches=0,dpi=100)
 
 def execute_all(model, target_layer, img_path, gcam_path, paper_cmap=True):
     """Execute the whole process at once
