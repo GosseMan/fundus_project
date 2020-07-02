@@ -298,15 +298,15 @@ def main():
         model.eval()
         outpath = './result/gc_'+args.network+'_'+args.gpu_id+'/'
         target_layer_lst = ['features']
-        cls_list = os.listdir(datapath+'/val')
+        cls_list = os.listdir(data_dir+'/val')
         #실제론 image_datasets[phase].classes이용
         for cls in cls_list:
-            img_list = os.listdir(datapath+'/val/'+cls)
+            img_list = os.listdir(data_dir+'/val/'+cls)
             if not os.path.isdir(outpath+'/'+cls):
                 os.makedirs(outpath+'/'+cls)
             for target_layer in target_layer_lst:
                 for img in img_list:
-                    img_path = datapath+'/val/'+cls+'/'+img
+                    img_path = data_dir+'/val/'+cls+'/'+img
                     result_path = outpath+'/'+cls+'/'+img.split('.')[0]+'_'+target_layer+img.split('.')[1]
                     #image, raw_image = load_image(img_path)
                     #print(F.softmax(model(image)))
