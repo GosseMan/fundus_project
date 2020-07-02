@@ -295,33 +295,22 @@ def main():
     print("time for train : ", time.time()-start)
     if args.gc == True:
         model = model_ft
+        model.eval()
         outpath = './result/gc_'+args.network+'_'+args.gpu_id+'/'
-        if not os.path.isdir(outpath):
-            os.makedirs(outpath)
-        use_fixed = True
-        model.__class__.__name__
-        if use_fixed == True:
-            for param in model.parameters():
-                param.requires_grad = True
-        model = model.eval()
-        model = model.cuda()
-        labellist = ['0ZERO', '1ONE', '2TWO']
-        if args.class_num==2:
-            labellist = ['class0','class1']
-        #labelfolder = '0ZERO'
-        for labelfolder in labellist:
-            dirname = data_dir+'/val/{}'.format(labelfolder)
-            filenames = os.listdir(dirname)
-            #only_name = filename.split('.')[0]
-            #count = 0
-            if not os.path.isdir(outpath+labelfolder):
-                os.makedirs(outpath+labelfolder)
-            for filename in filenames:
-                fullpathname = os.path.join(dirname,filename)
-                #img = cv2.imread(fullpathname)
-                #size_cropping(img,filename)
-                gradcam.visualize(fullpathname, labelfolder, model, outpath)
-                #count += 1
+        target_layer_lst = ['features']
+        cls_list = os.listdir(datapath+'/val')
+        #실제론 image_datasets[phase].classes이용
+        for cls in cls_list:
+            img_list = os.listdir(datapath+'/val/'+cls)
+            if not os.path.isdir(outpath+'/'+cls):
+                os.makedirs(outpath+'/'+cls)
+            for target_layer in target_layer_lst:
+                for img in img_list:
+                    img_path = datapath+'/val/'+cls+'/'+img
+                    result_path = outpath+'/'+cls+'/'+img.split('.')[0]+'_'+target_layer+img.split('.')[1]
+                    #image, raw_image = load_image(img_path)
+                    #print(F.softmax(model(image)))
+                    gradcam.execute_all(model, target_layer, img_path, result_path, paper_cmap=True)
     if args.roc == True:
         roc_curve(model_ft,dataloaders, batch_size, use_meta = args.metadata)
 
