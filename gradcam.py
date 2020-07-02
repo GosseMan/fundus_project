@@ -259,7 +259,7 @@ def main():
     #실제론 image_datasets[phase].classes이용
 
     for cls in cls_list:
-        img_list = os.listdir(datapath+'/val/'+cls')
+        img_list = os.listdir(datapath+'/val/'+cls)
         if not os.path.isdir(outpath+'/'+cls):
             os.makedirs(outpath+'/'+cls)
         for target_layer in target_layer_lst:
