@@ -137,8 +137,7 @@ class GradCAM(_BaseWrapper):
         gcam = gcam.view(B, C, H, W)
 
         return gcam
-   def __del__(self):  # 소멸자
-        print("{} 캐릭터가 삭제되었습니다.".format(self.model))
+
 def load_image(img_path):
     """Load an image and transform into pytorch tensor with normalization
 
@@ -186,9 +185,7 @@ def cal_gradcam(model, image, target_layer):
     gcam.backward(ids=ids_)
 
     regions = gcam.generate(target_layer=target_layer)
-    print('tt')
-    del gcam
-    print('hh')
+
     return regions[0, 0], probs[0,0].item(), ids[0,0].item()
 
 
