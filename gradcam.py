@@ -183,8 +183,8 @@ def cal_gradcam(model, image, target_layer):
     gcam = GradCAM(model=model)
     probs, ids = gcam.forward(image)
     ids_ = ids[0, 0].view(1, 1).to(device)
-    print ('probs : ' , probs)
-    print('ids : ' , ids)
+    print ('probs : ' , probs[0])
+    print('ids : ' , ids[0])
     gcam.backward(ids=ids_)
 
     regions = gcam.generate(target_layer=target_layer)
@@ -247,7 +247,7 @@ def main():
     #model = models.load(model_type)
     model.load_state_dict(torch.load(model_path))
     '''
-    model = torch.load('./3_densenet169_model.pt')
+    model = torch.load('./3_densenet169_model_s.pt')
     model.eval()
     target_layer_lst = ['features.denseblock4','features']
 
