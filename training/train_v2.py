@@ -306,6 +306,7 @@ def main():
                 os.makedirs(outpath+'/'+cls)
             for target_layer in target_layer_lst:
                 for img in img_list:
+                    print('hi')
                     img_path = data_dir+'/val/'+cls+'/'+img
                     result_path = outpath+'/'+cls+'/'+img.split('.')[0]+'_'+target_layer+img.split('.')[1]
                     #image, raw_image = load_image(img_path)
