@@ -137,7 +137,7 @@ class GradCAM(_BaseWrapper):
         gcam = gcam.view(B, C, H, W)
 
         return gcam
-   def __del__(self):  # 소멸자
+    def __del__(self):  # 소멸자
         print("{} 캐릭터가 삭제되었습니다.".format(self.model))
 
 def load_image(img_path):
