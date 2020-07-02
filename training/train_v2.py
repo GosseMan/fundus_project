@@ -311,7 +311,7 @@ def main():
                     result_path = outpath+'/'+cls+'/'+img.split('.')[0]+'_'+target_layer+img.split('.')[1]
                     #image, raw_image = load_image(img_path)
                     #print(F.softmax(model(image)))
-                    gradcam.execute_all(model, target_layer, img_path, result_path, paper_cmap=True)
+                    gradcam.execute_all(model, target_layer, img_path, result_path, paper_cmap=False)
     if args.roc == True:
         roc_curve(model_ft,dataloaders, batch_size, use_meta = args.metadata)
 
