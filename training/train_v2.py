@@ -296,7 +296,7 @@ def main():
     if args.gc == True:
         model = model_ft
         model.eval()
-        outpath = './result/gc_'+args.network+'_'+args.gpu_id+'/'
+        outpath = './result/gc_'+args.network+'_'+args.gpu_id
         target_layer_lst = ['features']
         cls_list = os.listdir(data_dir+'/val')
         #실제론 image_datasets[phase].classes이용
