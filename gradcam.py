@@ -252,20 +252,23 @@ def main():
     # target_layer = "features.denseblock4.denselayer32"
     #img_list = ['vk038873-clahe.jpg','vk042499-clahe.jpg','vk080873-clahe.jpg','vk123312-clahe.jpg','vk127891-clahe.jpg']
     #img_path = "data/age_resized_clahe_split/val/vk034698.jpg"
-    img_list = ['vk029159-clahe.jpg','vk029719-clahe.jpg', 'vk029742-clahe.jpg','vk030162.jpg-CLAHE.jpg','vk035030.jpg-CLAHE.jpg','vk046685.jpg-CLAHE.jpg']
-    if not os.path.isdir('./Oh_sali'):
-        os.makedirs('./Oh_sali')
-    for img in img_list:
-        img_path = './'+img
-        print(img_path)
+    datapath = './smalltoy'
+    outpath = './gctest'
 
+    cls_list = os.listdir(datapath+'/val')
+    #실제론 image_datasets[phase].classes이용
+
+    for cls in cls_list:
+        img_list = os.listdir(datapath+'/val/'+cls')
+        if not os.path.isdir(outpath+'/'+cls):
+            os.makedirs(outpath+'/'+cls)
         for target_layer in target_layer_lst:
-
-            result_path = "./Oh_sali/"+img.split('.')[0]+'_'+target_layer+'.jpg'
-
-            image, raw_image = load_image(img_path)
-            print(F.softmax(model(image)))
-            execute_all(model, target_layer, img_path, result_path, paper_cmap=False)
+            for img in img_list:
+                img_path = datapath+'/val/'+cls+'/'+img
+                result_path = outpath+'/'+cls+'/'+img.split('.')[0]+'_'+target_layer+img.split('.')[1]
+                #image, raw_image = load_image(img_path)
+                #print(F.softmax(model(image)))
+                execute_all(model, target_layer, img_path, result_path, paper_cmap=True)
 
 
 if __name__ == "__main__":
