@@ -183,14 +183,15 @@ def cal_gradcam(model, image, target_layer):
     gcam = GradCAM(model=model)
     probs, ids = gcam.forward(image)
     ids_ = ids[0, 0].view(1, 1).to(device)
-
+    print ('probs : ' , probs)
+    print('ids : ' , ids)
     gcam.backward(ids=ids_)
 
     regions = gcam.generate(target_layer=target_layer)
     return regions[0, 0]
 
 
-def save_gradcam(file_path, region, raw_image, paper_cmap=False):
+def save_gradcam(file_path, region, raw_image, prob, pred, paper_cmap=False):
     """Save the Grad CAM image
 
     Args:
@@ -204,16 +205,19 @@ def save_gradcam(file_path, region, raw_image, paper_cmap=False):
     """
 
     region = region.cpu().numpy()
-    cmap = cm.jet_r(region)[..., :3] * 255.0
-
-    cv2.imwrite(file_path, np.uint8(cmap))
     if paper_cmap:
+        cmap = cm.jet_r(region)[..., :3] * 255.0
         alpha = region[..., None]
         region = alpha * cmap + (1 - alpha) * raw_image
     else:
         region = (cmap.astype(np.float) + raw_image.astype(np.float)) / 2
-    #cv2.imwrite(file_path, np.uint8(region))
 
+    #cv2.imwrite(file_path, np.uint8(region))
+    plt.imshow(np.uint8(region)[:,:,::-1])
+    plt.title('{}: {:.1f}%'.format(prediction, prob))
+    plt.axis('off')
+    plt.tight_layout()
+    plt.savefig(filename,bbox_inces='tight',pad_inches=0,dpi=100)
 
 def execute_all(model, target_layer, img_path, gcam_path, paper_cmap=True):
     """Execute the whole process at once
@@ -231,7 +235,7 @@ def execute_all(model, target_layer, img_path, gcam_path, paper_cmap=True):
 
     image, raw_image = load_image(img_path)
     region = cal_gradcam(model, image, target_layer)
-    save_gradcam(file_path=gcam_path, region=region, raw_image=raw_image, paper_cmap=paper_cmap)
+    save_gradcam(file_path=gcam_path, region=region, raw_image=raw_image,prob,pred paper_cmap=paper_cmap)
 
 
 def main():
