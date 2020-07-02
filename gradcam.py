@@ -251,7 +251,7 @@ def main():
     '''
     model = torch.load('./3_densenet169_model_s.pt')
     model.eval()
-    target_layer_lst = ['features.denseblock4','features']
+    target_layer_lst = [features']
 
     #target_layer_lst = ['features.denseblock1','features.denseblock2','features.denseblock3']
     #target_layer_lst = ['features.denseblock4.denselayer32.conv1','features.denseblock4.denselayer32.norm2','features.denseblock4.denselayer32.relu2','features.denseblock4.denselayer32.conv2', 'features']
@@ -269,8 +269,8 @@ def main():
 
             result_path = "./Oh_sali/"+img.split('.')[0]+'_'+target_layer+'.jpg'
 
-
-
+            image, raw_image = load_image(img_path)
+            print(model(image))
             execute_all(model, target_layer, img_path, result_path, paper_cmap=False)
 
 
