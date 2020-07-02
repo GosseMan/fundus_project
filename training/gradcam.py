@@ -137,8 +137,7 @@ class GradCAM(_BaseWrapper):
         gcam = gcam.view(B, C, H, W)
 
         return gcam
-    def __del__(self):  # 소멸자
-        print("{} 캐릭터가 삭제되었습니다.".format(self.model))
+
 
 def load_image(img_path):
     """Load an image and transform into pytorch tensor with normalization
@@ -210,13 +209,14 @@ def save_gradcam(file_path, region, raw_image, prob, pred, paper_cmap=False):
     else:
         region = (cmap.astype(np.float) + raw_image.astype(np.float)) / 2
 
-    #cv2.imwrite(file_path, np.uint8(region))
+    cv2.imwrite(file_path, np.uint8(region))
+    '''
     plt.imshow(np.uint8(region)[:,:,::-1])
     plt.title('{}: {:.1f}%'.format(pred, prob))
     plt.axis('off')
     plt.tight_layout()
     plt.savefig(file_path,bbox_inces='tight',pad_inches=0,dpi=100)
-    plt.close()
+    '''
 def execute_all(model, target_layer, img_path, gcam_path, paper_cmap=True):
     """Execute the whole process at once
 
