@@ -256,7 +256,7 @@ def main():
     # target_layer = "features.denseblock4.denselayer32"
     #img_list = ['vk038873-clahe.jpg','vk042499-clahe.jpg','vk080873-clahe.jpg','vk123312-clahe.jpg','vk127891-clahe.jpg']
     #img_path = "data/age_resized_clahe_split/val/vk034698.jpg"
-    img_list = ['vk029159-clahe.jpg','vk029719-clahe.jpg', 'vk029742-clahe.jpg']
+    img_list = ['vk029159-clahe.jpg','vk029719-clahe.jpg', 'vk029742-clahe.jpg','vk030162-clahe.jpg','vk035030-clahe.jpg','vk046685-clahe.jpg']
     if not os.path.isdir('./Oh_sali'):
         os.makedirs('./Oh_sali')
     for img in img_list:
