@@ -266,7 +266,7 @@ def main():
         for target_layer in target_layer_lst:
             for img in img_list:
                 img_path = datapath+'/val/'+cls+'/'+img
-                result_path = outpath+'/'+cls+'/'+img.split('.')[0]+'_'+target_layer+img.split('.')[1]
+                result_path = outpath+'/'+cls+'/'+img.split('.')[0]+'_'+target_layer+'.'+img.split('.')[-1]
                 #image, raw_image = load_image(img_path)
                 #print(F.softmax(model(image)))
                 execute_all(model, target_layer, img_path, result_path, paper_cmap=True)
