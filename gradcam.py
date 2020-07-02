@@ -184,7 +184,7 @@ def cal_gradcam(model, image, target_layer):
     probs, ids = gcam.forward(image)
     print('ids1 : ' , ids[0])
     ids_ = ids[0, 0].view(1, 1).to(device)
-    print ('probs : ' , probs[0][0].item())
+    print ('probs : ' , probs[0,0].item())
     print('ids2 : ' , ids[0])
     print('final ids3 : ' , ids[0,0].item())
     gcam.backward(ids=ids_)
