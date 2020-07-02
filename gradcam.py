@@ -189,7 +189,7 @@ def cal_gradcam(model, image, target_layer):
     return regions[0, 0], probs[0,0].item(), ids[0,0].item()
 
 
-def save_gradcam(file_path, region, raw_image, paper_cmap=False):
+def save_gradcam(file_path, region, raw_image, prob, pred, paper_cmap=False):
     """Save the Grad CAM image
 
     Args:
@@ -201,8 +201,6 @@ def save_gradcam(file_path, region, raw_image, paper_cmap=False):
 
     Returns:
     """
-    prob = 0.1
-    prediction = 'a'
     region = region.cpu().numpy()
     cmap = cm.jet_r(region)[..., :3] * 255.0
     if paper_cmap:
@@ -213,7 +211,7 @@ def save_gradcam(file_path, region, raw_image, paper_cmap=False):
 
     #cv2.imwrite(file_path, np.uint8(region))
     plt.imshow(np.uint8(region)[:,:,::-1])
-    plt.title('{}: {:.1f}%'.format(prediction, prob))
+    plt.title('{}: {:.1f}%'.format(pred, prob))
     plt.axis('off')
     plt.tight_layout()
     plt.savefig(file_path,bbox_inces='tight',pad_inches=0,dpi=100)
@@ -233,8 +231,8 @@ def execute_all(model, target_layer, img_path, gcam_path, paper_cmap=True):
     """
 
     image, raw_image = load_image(img_path)
-    region, prob, cls = cal_gradcam(model, image, target_layer)
-    save_gradcam(file_path=gcam_path, region=region, raw_image=raw_image,paper_cmap=paper_cmap)
+    region, prob, pred = cal_gradcam(model, image, target_layer)
+    save_gradcam(file_path=gcam_path, region=region, raw_image=raw_image, prob, pred, paper_cmap=paper_cmap)
 
 
 def main():
