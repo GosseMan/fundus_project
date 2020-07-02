@@ -186,7 +186,7 @@ def cal_gradcam(model, image, target_layer):
     ids_ = ids[0, 0].view(1, 1).to(device)
     print ('probs : ' , probs[0][0].item())
     print('ids2 : ' , ids[0])
-    print('final ids3 : ' , ids[0,0].view(1,1).item())
+    print('final ids3 : ' , ids[0,0].item())
     gcam.backward(ids=ids_)
 
     regions = gcam.generate(target_layer=target_layer)
