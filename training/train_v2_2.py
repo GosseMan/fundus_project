@@ -308,7 +308,7 @@ def main():
         while os.path.isdir(result_folder):
             result_folder=result_folder+'-1'
         cls_list = os.listdir(data_folder)
-        gcam = init_gradcam(model)
+        gcam = gradcam.init_gradcam(model)
         for cls in cls_list:
             img_folder = data_folder + '/' + cls
             result_cls_folder = result_folder + '/' + cls
@@ -324,7 +324,7 @@ def main():
                     result_cls_folder, img.split(".")[0] + "_" + str(idx) + "_" + target_layer + ".jpg"
                     )
                 print(result_path)
-                single_gradcam(gcam, target_layer, img_path, result_path, cls_list, paper_cmap=True)
+                gradcam.single_gradcam(gcam, target_layer, img_path, result_path, cls_list, paper_cmap=True)
     if args.roc == True:
         roc_curve(model_ft,dataloaders, batch_size, use_meta = args.metadata)
 
