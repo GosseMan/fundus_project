@@ -303,7 +303,7 @@ def main():
         model.eval()
 
         ########## Case 1: Single file ##########
-        data_folder = data_dir
+        data_folder = data_dir+'/val'
         result_folder = "./result/gradcam_"+args.gpu_id
         while os.path.isdir(result_folder):
             result_folder=result_folder+'-1'
@@ -321,7 +321,7 @@ def main():
                 if os.path.isdir(img_path):
                     continue
                 result_path = os.path.join(
-                    result_cls_folder, img.split(".")[0] + "_" + str(idx) + "_" + target_layer + ".jpg"
+                    result_cls_folder, img.split(".")[0] + ".jpg"
                     )
                 print(result_path)
                 gradcam.single_gradcam(gcam, target_layer, img_path, result_path, cls_list, paper_cmap=True)
