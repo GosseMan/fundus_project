@@ -3,7 +3,8 @@
 This module produces a Grad-CAM image of the input image and the trained model. The model should be
 a pytorch model type. The input model makes a result from the input image while collecting gradient
 values at the same time. Then, the gradients at the target layer are transformed into color map.
-Finally, a Grad-CAM image is produced and saved at the designated path.
+Finally, a Grad-CAM image is produced and saved at the designated path.Counting objects: 3, done.
+
 
 The source codes of this module were written by Kazuto Nakashima, and modified by Hyunseok Oh.
 The original version can be found in http://kazuto1011.github.io.
@@ -27,24 +28,26 @@ Required modules are as follows:
 
 
 Functions:
+    init_gradcam(model)
     load_image(img_path)
-    cal_gradcam(model, image, target_layer)
+    cal_gradcam(model, gcam, image, target_layer)
     save_gradcam(file_path, region, raw_image, paper_cmap(opt))
-    execute_all(model, target_layer, img_path, gcam_path, paper_cmap(opt))
+    single_gradcam(gcam, target_layer, img_path, gcam_path, paper_cmap(opt))
 
 Classes:
     GradCam(model)
 """
 
-import os
+
 import torch
 from torch.nn import functional as F
 from torchvision import transforms
 import numpy as np
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
+import os
 import cv2
-#import models
+
 
 # Original code
 class _BaseWrapper(object):
@@ -135,8 +138,26 @@ class GradCAM(_BaseWrapper):
         gcam -= gcam.min(dim=1, keepdim=True)[0]
         gcam /= gcam.max(dim=1, keepdim=True)[0]
         gcam = gcam.view(B, C, H, W)
-
         return gcam
+
+
+def init_gradcam(model):
+    """Initialize a GradCAM instance for the input model
+
+    Args:
+        model (PyTorch model): Trained PyTorch model file
+
+    Returns:
+        gcam (GradCAM): GradCAM instance for generating Grad CAM images
+    """
+
+    model.eval()
+
+    for param in model.parameters():
+        param.requires_grad = True
+
+    gcam = GradCAM(model=model)
+    return gcam
 
 
 def load_image(img_path):
@@ -162,11 +183,11 @@ def load_image(img_path):
     return image, raw_image
 
 
-def cal_gradcam(model, image, target_layer):
+def cal_gradcam(gcam, image, target_layer):
     """Calculate the gradients and extract information at the target layer
 
     Args:
-        model (PyTorch model): Trained PyTorch model file
+        gcam (GradCAM): GradCAM instance for generating Grad CAM images
         image (PyTorch tensor): Pytorch tensor of the transformed image with normalization (ImageNet stat)
         target_layer (str): Name of the target layer of the model (Must have the same layer name in the model)
 
@@ -175,21 +196,16 @@ def cal_gradcam(model, image, target_layer):
     """
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model.eval()
-
-    for param in model.parameters():
-        param.requires_grad = True
-
-    gcam = GradCAM(model=model)
     probs, ids = gcam.forward(image)
     ids_ = ids[0, 0].view(1, 1).to(device)
+
     gcam.backward(ids=ids_)
 
     regions = gcam.generate(target_layer=target_layer)
     return regions[0, 0], probs[0,0].item(), ids[0,0].item()
 
 
-def save_gradcam(file_path, region, raw_image, prob, pred, paper_cmap=False):
+def save_gradcam(file_path, region, raw_image, prob, pred, label_list,paper_cmap=False):
     """Save the Grad CAM image
 
     Args:
@@ -201,6 +217,7 @@ def save_gradcam(file_path, region, raw_image, prob, pred, paper_cmap=False):
 
     Returns:
     """
+
     region = region.cpu().numpy()
     cmap = cm.jet_r(region)[..., :3] * 255.0
     if paper_cmap:
@@ -208,20 +225,26 @@ def save_gradcam(file_path, region, raw_image, prob, pred, paper_cmap=False):
         region = alpha * cmap + (1 - alpha) * raw_image
     else:
         region = (cmap.astype(np.float) + raw_image.astype(np.float)) / 2
-
     #cv2.imwrite(file_path, np.uint8(region))
-
+    print(region.shape)
+    txt_img = np.zeros((50,region.shape[1],3),np.uint8)
+    #txt_img[:]=(255,255,255)
+    print(txt_img.shape)
+    vcat = cv2.vconcat((txt_img, np.uint8(region)))
+    cv2.putText(vcat,'{}: {:.1f}%'.format(label_list[pred]+' class', prob*100),(10,40), 2, 1,(255,255,255), 2, 0)
+    cv2.imwrite(file_path, np.uint8(vcat))
+    '''
     plt.imshow(np.uint8(region)[:,:,::-1])
-    plt.title('{}: {:.1f}%'.format(pred+' class', prob*100))
+    plt.title('{}: {:.1f}%'.format(label_list[pred]+' class', prob*100))
     plt.axis('off')
     plt.tight_layout()
     plt.savefig(file_path,bbox_inces='tight',pad_inches=0,dpi=100)
-
-def execute_all(model, target_layer, img_path, gcam_path, paper_cmap=True):
-    """Execute the whole process at once
+    '''
+def single_gradcam(gcam, target_layer, img_path, gcam_path,label_list, paper_cmap=True):
+    """Make a single Grad CAM image at once. Execute load_image, cal_gradcam, and save_gradcam at once
 
     Args:
-        model (PyTorch model): Trained PyTorch model file
+        gcam (GradCAM): GradCAM instance for generating Grad CAM images
         target_layer (str): Name of the target layer of the model (Must have the same layer name in the model)
         img_path (str): Path of the original image
         gcam_path (str): Path that the Grad CAM image will be saved at
@@ -232,44 +255,63 @@ def execute_all(model, target_layer, img_path, gcam_path, paper_cmap=True):
     """
 
     image, raw_image = load_image(img_path)
-    region, prob, pred = cal_gradcam(model, image, target_layer)
-    save_gradcam(file_path=gcam_path, region=region, raw_image=raw_image, prob=prob, pred=pred, paper_cmap=paper_cmap)
+    region, prob, pred = cal_gradcam(gcam, image, target_layer)
+    save_gradcam(file_path=gcam_path, region=region, raw_image=raw_image,prob = prob, pred = pred, label_list = label_list, paper_cmap=paper_cmap)
 
 
 def main():
-    '''
-    model_type = "Densenet169"
-    model_path = "../0630age_result/3_densenet169_model_s.pt"
 
-    #model = models.load(model_type)
-    model.load_state_dict(torch.load(model_path))
-    '''
-    model = torch.load('./3_densenet169_model_s.pt')
+    model_path = "../fundus_project/training/result/1_densenet169_model.pt"
+    target_layer = "features"
+    label_list = ['over0','over30','over40','over50','over60','over70']
+    model = torch.load(model_path, map_location="cuda:0")
     model.eval()
-    target_layer_lst = ['features']
 
-    #target_layer_lst = ['features.denseblock1','features.denseblock2','features.denseblock3']
-    #target_layer_lst = ['features.denseblock4.denselayer32.conv1','features.denseblock4.denselayer32.norm2','features.denseblock4.denselayer32.relu2','features.denseblock4.denselayer32.conv2', 'features']
-    # target_layer = "features.denseblock4.denselayer32"
-    #img_list = ['vk038873-clahe.jpg','vk042499-clahe.jpg','vk080873-clahe.jpg','vk123312-clahe.jpg','vk127891-clahe.jpg']
-    #img_path = "data/age_resized_clahe_split/val/vk034698.jpg"
-    datapath = './smalltoy'
-    outpath = './gctest'
-
-    cls_list = os.listdir(datapath+'/val')
-    #실제론 image_datasets[phase].classes이용
-
+    ########## Case 1: Single file ##########
+    data_folder = "../data/age_q6_clahe_split/val"
+    result_folder = "../gradcam_q6"
+    cls_list = os.listdir(data_folder)
+    gcam = init_gradcam(model)
     for cls in cls_list:
-        img_list = os.listdir(datapath+'/val/'+cls)
-        if not os.path.isdir(outpath+'/'+cls):
-            os.makedirs(outpath+'/'+cls)
-        for target_layer in target_layer_lst:
-            for img in img_list:
-                img_path = datapath+'/val/'+cls+'/'+img
-                result_path = outpath+'/'+cls+'/'+img.split('.')[0]+'_'+target_layer+'.'+img.split('.')[-1]
-                #image, raw_image = load_image(img_path)
-                #print(F.softmax(model(image)))
-                execute_all(model, target_layer, img_path, result_path, paper_cmap=True)
+        img_folder = data_folder + '/' + cls
+        result_cls_folder = result_folder + '/' + cls
+        if not os.path.isdir(result_cls_folder):
+            os.makedirs(result_cls_folder)
+        for idx, img in enumerate(os.listdir(img_folder)):
+
+            img_path = os.path.join(img_folder, img)
+
+            if os.path.isdir(img_path):
+                continue
+            result_path = os.path.join(
+                result_cls_folder, img.split(".")[0] + "_" + str(idx) + "_" + target_layer + ".jpg"
+                )
+            print(result_path)
+            single_gradcam(gcam, target_layer, img_path, result_path, label_list, paper_cmap=True)
+    ########## Case 2: Multiple files in a directory ##########
+
+    # import os
+
+    # target_layers = ["layer1", "layer2", "layer3", "layer4"]
+
+    # img_folder = "./(image folder)"
+    # result_folder = "./(result folder)"
+
+    # gcam = init_gradcam(model)
+
+    # for idx, img in enumerate(os.listdir(img_folder)):
+    #     img_path = os.path.join(img_folder, img)
+    #     if os.path.isdir(img_path):
+    #         continue
+
+    #     for tidx, target_layer in enumerate(target_layers):
+    #         result_path = os.path.join(
+    #             result_folder, img.split(".")[0] + "_" + str(tidx) + "_" + target_layer + ".jpg"
+    #         )
+
+    #         single_gradcam(gcam, target_layer, img_path, result_path, paper_cmap=True)
+
+    #     print("{} / {} Finished".format(idx, len(os.listdir(img_folder))))
 
 
 if __name__ == "__main__":

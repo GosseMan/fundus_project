@@ -299,7 +299,7 @@ def main():
         if args.network == 'densenet169':
             target_layer = "features"
         else:
-            print('densenet169 외에는 아직 구현안됨')
+            print('Grad-CAM : densenet169 외에는 아직 구현안됨')
         model.eval()
 
         ########## Case 1: Single file ##########
