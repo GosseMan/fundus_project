@@ -225,11 +225,8 @@ def save_gradcam(file_path, region, raw_image, prob, pred, label_list,paper_cmap
         region = alpha * cmap + (1 - alpha) * raw_image
     else:
         region = (cmap.astype(np.float) + raw_image.astype(np.float)) / 2
-    #cv2.imwrite(file_path, np.uint8(region))
-    print(region.shape)
     txt_img = np.zeros((50,region.shape[1],3),np.uint8)
     #txt_img[:]=(255,255,255)
-    print(txt_img.shape)
     vcat = cv2.vconcat((txt_img, np.uint8(region)))
     cv2.putText(vcat,'{}: {:.1f}%'.format(label_list[pred]+' class', prob*100),(10,40), 2, 1,(255,255,255), 2, 0)
     cv2.imwrite(file_path, np.uint8(vcat))
@@ -286,7 +283,6 @@ def main():
             result_path = os.path.join(
                 result_cls_folder, img.split(".")[0] + "_" + str(idx) + "_" + target_layer + ".jpg"
                 )
-            print(result_path)
             single_gradcam(gcam, target_layer, img_path, result_path, label_list, paper_cmap=True)
     ########## Case 2: Multiple files in a directory ##########
 

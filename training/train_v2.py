@@ -55,7 +55,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
     val_acc_list = []
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
-    best_loss = 10000
+    #best_loss = 10000
     dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
     earlystop = 0
     prev_loss=10000
@@ -114,7 +114,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                     earlystop=earlystop+1
                 else:
                     earlystop=0
-                if epoch_loss < best_loss:
+                if epoch_acc > best_acc:
                     best_acc = epoch_acc
                     best_loss = epoch_loss
                     best_model_wts = copy.deepcopy(model.state_dict())
@@ -295,24 +295,36 @@ def main():
     print("time for train : ", time.time()-start)
     if args.gc == True:
         model = model_ft
+
+        if args.network == 'densenet169':
+            target_layer = "features"
+        else:
+            print('Grad-CAM : densenet169 외에는 아직 구현안됨')
         model.eval()
-        outpath = './result/gc_'+args.network+'_'+args.gpu_id
-        target_layer_lst = ['features']
-        cls_list = os.listdir(data_dir+'/val')
-        #실제론 image_datasets[phase].classes이용
+
+        ########## Case 1: Single file ##########
+        data_folder = data_dir+'/val'
+        result_folder = "./result/gradcam_"+args.gpu_id
+        while os.path.isdir(result_folder):
+            result_folder=result_folder+'-1'
+        cls_list = os.listdir(data_folder)
+        gcam = gradcam.init_gradcam(model)
         for cls in cls_list:
-            img_list = os.listdir(data_dir+'/val/'+cls)
-            if not os.path.isdir(outpath+'/'+cls):
-                os.makedirs(outpath+'/'+cls)
-            for target_layer in target_layer_lst:
-                for img in img_list:
-                    print('hi')
-                    img_path = data_dir+'/val/'+cls+'/'+img
-                    result_path = outpath+'/'+cls+'/'+img.split('.')[0]+'_'+target_layer+'.'+img.split('.')[1]
-                    print(result_path)
-                    #image, raw_image = load_image(img_path)
-                    #print(F.softmax(model(image)))
-                    gradcam.execute_all(model, target_layer, img_path, result_path, paper_cmap=False)
+            img_folder = data_folder + '/' + cls
+            result_cls_folder = result_folder + '/' + cls
+            if not os.path.isdir(result_cls_folder):
+                os.makedirs(result_cls_folder)
+            for idx, img in enumerate(os.listdir(img_folder)):
+
+                img_path = os.path.join(img_folder, img)
+
+                if os.path.isdir(img_path):
+                    continue
+                result_path = os.path.join(
+                    result_cls_folder, img.split(".")[0] + ".jpg"
+                    )
+                print(result_path)
+                gradcam.single_gradcam(gcam, target_layer, img_path, result_path, cls_list, paper_cmap=True)
     if args.roc == True:
         roc_curve(model_ft,dataloaders, batch_size, use_meta = args.metadata)
 
