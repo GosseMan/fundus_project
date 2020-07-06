@@ -304,7 +304,7 @@ def main():
 
         ########## Case 1: Single file ##########
         data_folder = data_dir
-        result_folder = "./gradcam_"+args.gpu_id
+        result_folder = "./result/gradcam_"+args.gpu_id
         while os.path.isdir(result_folder):
             result_folder=result_folder+'-1'
         cls_list = os.listdir(data_folder)
