@@ -309,7 +309,7 @@ def main():
             result_folder=result_folder+'-1'
 
         gcam = gradcam.init_gradcam(model)
-        for cls in cls_list:
+        for cls in class_names:
             img_folder = data_folder + '/' + cls
             result_cls_folder = result_folder + '/' + cls
             if not os.path.isdir(result_cls_folder):

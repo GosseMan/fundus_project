@@ -232,7 +232,7 @@ def save_gradcam(file_path, region, raw_image, prob, pred, label_list,paper_cmap
     cv2.imwrite(file_path, np.uint8(vcat))
     '''
     plt.imshow(np.uint8(region)[:,:,::-1])
-    plt.title('{}: {:.1f}%'.format(label_list[pred]+' class', prob*100))
+    plt.title('{} - {}: {:.1f}%'.format(label_list[pred]+ pred +' class', prob*100))
     plt.axis('off')
     plt.tight_layout()
     plt.savefig(file_path,bbox_inces='tight',pad_inches=0,dpi=100)
