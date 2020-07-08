@@ -230,7 +230,7 @@ def main():
     image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])  for x in ['train', 'val']}
     dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size,shuffle=True, num_workers=4) for x in ['train', 'val']}
     class_names = image_datasets['train'].classes
-
+    print(class_names)
     if args.network == 'resnet18':
         model_ft = models.resnet18(pretrained=True)
         if not args.fine_tuning:
