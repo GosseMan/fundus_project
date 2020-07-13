@@ -190,10 +190,6 @@ def confusion_mat(model,fig_name, dataloaders,class_names, batch_size, use_meta)
             _, preds = torch.max(outputs, 1)
             preds=preds.cpu()
             pred=np.append(pred,preds.numpy())
-    print('GT : ')
-    print(ground)
-    print('Prediction : ')
-    print(pred)
     plot_confusion_matrix(ground,pred,classes=np.array(class_names),normalize=True)
     while os.path.isfile(fig_name+'_confusion.png'):
         fig_name=fig_name+'-1'
