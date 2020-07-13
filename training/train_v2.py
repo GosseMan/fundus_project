@@ -322,7 +322,7 @@ def main():
                 result_path = os.path.join(
                     result_cls_folder, img.split(".")[0] + ".jpg"
                     )
-                print(result_path)
+                
                 gradcam.single_gradcam(gcam, target_layer, img_path, result_path, class_names, paper_cmap=True)
     if args.roc == True:
         roc_curve(model_ft,dataloaders, batch_size, use_meta = args.metadata)
