@@ -110,21 +110,20 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                 phase, epoch_loss, epoch_acc))
             if phase == 'val':
-                if prev_loss<epoch_loss:
-                    earlystop=earlystop+1
-                else:
-                    earlystop=0
                 if epoch_acc > best_acc:
                     best_acc = epoch_acc
                     best_loss = epoch_loss
                     best_model_wts = copy.deepcopy(model.state_dict())
                     best_epoch = epoch
+                if epoch >= 50 and early_stopping==True:
+                    if prev_loss<epoch_loss:
+                        earlystop=earlystop+1
+                    else:
+                        earlystop=0
+                    if early_stopping == 3
+                        print('Early Stopping at Epoch {}'.format(epoch))
+                        break
                 prev_loss = epoch_loss
-
-        if epoch >= 5 and earlystop==3 and early_stopping==True:
-            print('Early Stopping at Epoch {}'.format(epoch))
-            num_epochs=epoch+1
-            break
         print()
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(
