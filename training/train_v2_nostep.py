@@ -20,6 +20,14 @@ import cv2
 import roc
 import torch.nn.functional as F
 start=time.time()
+rand = 7
+torch.manual_seed(rand)
+np.random.seed(rand)
+random.seed(rand)
+'''
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+'''
 class MyDensenet169(nn.Module):
     def __init__(self, class_num, pretrained=True):
         super().__init__()
@@ -120,7 +128,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                         earlystop=earlystop+1
                     else:
                         earlystop=0
-                    if early_stopping == 2:
+                    if earlystop == 2:
                         print('Early Stopping at Epoch {}'.format(epoch))
                         break
                 prev_loss = epoch_loss

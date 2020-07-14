@@ -19,6 +19,14 @@ import gradcam
 import cv2
 import roc
 import torch.nn.functional as F
+rand = 7
+torch.manual_seed(rand)
+np.random.seed(rand)
+random.seed(rand)
+'''
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+'''
 start=time.time()
 class MyDensenet169(nn.Module):
     def __init__(self, class_num, pretrained=True):
@@ -120,7 +128,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                         earlystop=earlystop+1
                     else:
                         earlystop=0
-                    if early_stopping == 3
+                    if earlystop == 2:
                         print('Early Stopping at Epoch {}'.format(epoch))
                         break
                 prev_loss = epoch_loss
@@ -322,7 +330,7 @@ def main():
                 result_path = os.path.join(
                     result_cls_folder, img.split(".")[0] + ".jpg"
                     )
-                
+
                 gradcam.single_gradcam(gcam, target_layer, img_path, result_path, class_names, paper_cmap=True)
     if args.roc == True:
         roc_curve(model_ft,dataloaders, batch_size, use_meta = args.metadata)
