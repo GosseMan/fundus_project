@@ -23,7 +23,7 @@ start=time.time()
 rand = 7
 torch.manual_seed(rand)
 np.random.seed(rand)
-random.seed(rand)
+#random.seed(rand)
 '''
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
