@@ -128,7 +128,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                         earlystop=earlystop+1
                     else:
                         earlystop=0
-                    if earlystop == 2:
+                    if earlystop == 3:
                         print('Early Stopping at Epoch {}'.format(epoch))
                         break
                 prev_loss = epoch_loss
