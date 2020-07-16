@@ -19,10 +19,11 @@ import gradcam
 import cv2
 import roc
 import torch.nn.functional as F
+import random
 rand = 7
 torch.manual_seed(rand)
 np.random.seed(rand)
-#random.seed(rand)
+random.seed(rand)
 '''
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
@@ -66,7 +67,6 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
     #best_loss = 10000
     dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
     earlystop = 0
-    prev_loss=10000
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
@@ -118,20 +118,20 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                 phase, epoch_loss, epoch_acc))
             if phase == 'val':
+                if epoch >= 30 and early_stopping==True:
+                    if epoch_loss>best_loss:
+                        earlystop=earlystop+1
+                    else:
+                        earlystop=0
+                    if earlystop == 20:
+                        print('Early Stopping at Epoch {}'.format(epoch))
+                        break
                 if epoch_acc > best_acc:
                     best_acc = epoch_acc
                     best_loss = epoch_loss
                     best_model_wts = copy.deepcopy(model.state_dict())
                     best_epoch = epoch
-                if epoch >= 50 and early_stopping==True:
-                    if prev_loss<epoch_loss:
-                        earlystop=earlystop+1
-                    else:
-                        earlystop=0
-                    if earlystop == 3:
-                        print('Early Stopping at Epoch {}'.format(epoch))
-                        break
-                prev_loss = epoch_loss
+
         print()
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(
