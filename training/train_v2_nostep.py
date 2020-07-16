@@ -126,7 +126,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                     if earlystop == 20:
                         print('Early Stopping at Epoch {}'.format(epoch))
                         break
-                if epoch_acc > best_acc:
+                if epoch_loss < best_loss:
                     best_acc = epoch_acc
                     best_loss = epoch_loss
                     best_model_wts = copy.deepcopy(model.state_dict())
