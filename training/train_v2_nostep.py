@@ -64,7 +64,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
     val_acc_list = []
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
-    #best_loss = 10000
+    best_loss = 10000
     dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
     earlystop = 0
     earlystop_final = False
