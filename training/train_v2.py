@@ -67,6 +67,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
     best_loss = 10000
     dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
     earlystop = 0
+    earlystop_final = False
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
