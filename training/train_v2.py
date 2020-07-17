@@ -125,6 +125,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                         earlystop = 0
                     if earlystop == 20:
                         print('Early Stopping at Epoch {}'.format(epoch))
+                        earlystop_final =True
                         break
                 if epoch_acc > best_acc:
                     best_acc = epoch_acc
@@ -132,6 +133,8 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                     best_epoch = epoch
                 if epoch_loss < best_loss:
                     best_loss = epoch_loss
+        if earlystop_final ==True:
+            break
         print()
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(
@@ -327,11 +330,7 @@ def main():
 
                 if os.path.isdir(img_path):
                     continue
-                result_path = os.path.join(
-                    result_cls_folder, img.split(".")[0] + ".jpg"
-                    )
-
-                gradcam.single_gradcam(gcam, target_layer, img_path, result_path, class_names, paper_cmap=True)
+                gradcam.single_gradcam(gcam, target_layer, img_path, result_cls_folder, class_names, cls, paper_cmap=True)
     if args.roc == True:
         roc_curve(model_ft,dataloaders, batch_size, use_meta = args.metadata)
 

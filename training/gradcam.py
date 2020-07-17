@@ -225,21 +225,18 @@ def save_gradcam(file_path, region, raw_image, prob, pred, label_list,paper_cmap
         region = alpha * cmap + (1 - alpha) * raw_image
     else:
         region = (cmap.astype(np.float) + raw_image.astype(np.float)) / 2
+    #cv2.imwrite(file_path, np.uint8(region))
+    #print(region.shape)
     txt_img = np.zeros((50,region.shape[1],3),np.uint8)
     #txt_img[:]=(255,255,255)
+    #print(txt_img.shape)
     vcat = cv2.vconcat((txt_img, np.uint8(region)))
     cv2.putText(vcat,'{}: {:.1f}%'.format(label_list[pred]+' class', prob*100),(10,40), 2, 1,(255,255,255), 2, 0)
     cv2.imwrite(file_path, np.uint8(vcat))
-    '''
-    plt.imshow(np.uint8(region)[:,:,::-1])
-    plt.title('{} - {}: {:.1f}%'.format(label_list[pred]+ pred +' class', prob*100))
-    plt.axis('off')
-    plt.tight_layout()
-    plt.savefig(file_path,bbox_inces='tight',pad_inches=0,dpi=100)
-    '''
-def single_gradcam(gcam, target_layer, img_path, gcam_path,label_list, paper_cmap=True):
-    """Make a single Grad CAM image at once. Execute load_image, cal_gradcam, and save_gradcam at once
 
+def single_gradcam(gcam, target_layer, img_path, gcam_path,label_list, gt, paper_cmap=True):
+    """Make a single Grad CAM image at once. Execute load_image, cal_gradcam, and save_gradcam at once
+ 
     Args:
         gcam (GradCAM): GradCAM instance for generating Grad CAM images
         target_layer (str): Name of the target layer of the model (Must have the same layer name in the model)
@@ -253,20 +250,23 @@ def single_gradcam(gcam, target_layer, img_path, gcam_path,label_list, paper_cma
 
     image, raw_image = load_image(img_path)
     region, prob, pred = cal_gradcam(gcam, image, target_layer)
-    save_gradcam(file_path=gcam_path, region=region, raw_image=raw_image,prob = prob, pred = pred, label_list = label_list, paper_cmap=paper_cmap)
+    result_path = os.path.join(
+            gcam_path, gt + '_' + label_list[pred] + '_' + str(round(prob,2)) + '_' + img_path.split('/')[-1]
+            )
+    save_gradcam(file_path=result_path, region=region, raw_image=raw_image,prob = prob, pred = pred, label_list = label_list, paper_cmap=paper_cmap)
 
 
 def main():
 
-    model_path = "../fundus_project/training/result/1_densenet169_model.pt"
+    model_path = "../fundus_project/training/result/2_densenet169_model.pt"
     target_layer = "features"
-    label_list = ['over0','over30','over40','over50','over60','over70']
+    label_list = ['0ZERO','1ONE','2TWO']
     model = torch.load(model_path, map_location="cuda:0")
     model.eval()
 
     ########## Case 1: Single file ##########
-    data_folder = "../data/age_q6_clahe_split/val"
-    result_folder = "../gradcam_q6"
+    data_folder = "../data/mFS_2years_seed88_split_under_zoom_aug_clahe/val"
+    result_folder = "../0717_gc_res"
     cls_list = os.listdir(data_folder)
     gcam = init_gradcam(model)
     for cls in cls_list:
@@ -280,10 +280,9 @@ def main():
 
             if os.path.isdir(img_path):
                 continue
-            result_path = os.path.join(
-                result_cls_folder, img.split(".")[0] + "_" + str(idx) + "_" + target_layer + ".jpg"
-                )
-            single_gradcam(gcam, target_layer, img_path, result_path, label_list, paper_cmap=True)
+
+            #print(result_path)
+            single_gradcam(gcam, target_layer, img_path, result_cls_folder, label_list, cls, paper_cmap=True)
     ########## Case 2: Multiple files in a directory ##########
 
     # import os

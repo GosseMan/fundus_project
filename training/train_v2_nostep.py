@@ -67,6 +67,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
     #best_loss = 10000
     dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
     earlystop = 0
+    earlystop_final = False
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
@@ -125,6 +126,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                         earlystop = 0
                     if earlystop == 20:
                         print('Early Stopping at Epoch {}'.format(epoch))
+                        earlystop_final =True
                         break
                 if epoch_acc > best_acc:
                     best_acc = epoch_acc
@@ -132,7 +134,8 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
                     best_epoch = epoch
                 if epoch_loss < best_loss:
                     best_loss = epoch_loss
-
+        if earlystop_final ==True:
+            break
         print()
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(
