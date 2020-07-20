@@ -146,7 +146,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
     fig_name  = './result/'+fig_name
     while os.path.isfile(fig_name+'_lossaccplot.png'):
         fig_name=fig_name+'-1'
-    loss_accuracy_plot(num_epochs,train_loss_list,val_loss_list,train_acc_list,val_acc_list,fig_name)
+    loss_accuracy_plot(len(train_loss_list),train_loss_list,val_loss_list,train_acc_list,val_acc_list,fig_name)
     model.load_state_dict(best_model_wts)
     return model
 
@@ -306,7 +306,6 @@ def main():
     print("time for train : ", time.time()-start)
     if args.gc == True:
         model = model_ft
-
         if args.network == 'densenet169':
             target_layer = "features"
         else:
@@ -315,6 +314,9 @@ def main():
 
         ########## Case 1: Single file ##########
         data_folder = data_dir+'/val'
+
+
+
         result_folder = "./result/gradcam_"+args.gpu_id
         while os.path.isdir(result_folder):
             result_folder=result_folder+'-1'
