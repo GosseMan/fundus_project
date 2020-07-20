@@ -119,12 +119,12 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                 phase, epoch_loss, epoch_acc))
             if phase == 'val':
-                if epoch >= 30 and early_stopping==True:
+                if epoch >= 0 and early_stopping==True:
                     if epoch_loss>best_loss:
                         earlystop=earlystop+1
                     else:
                         earlystop = 0
-                    if earlystop == 20:
+                    if earlystop == 2:
                         print('Early Stopping at Epoch {}'.format(epoch))
                         earlystop_final =True
                         break
