@@ -47,7 +47,7 @@ import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import os
 import cv2
-
+from PIL import Image
 
 # Original code
 class _BaseWrapper(object):
@@ -66,6 +66,7 @@ class _BaseWrapper(object):
         self.image_shape = image.shape[2:]
         self.logits = self.model(image)
         self.probs = F.softmax(self.logits, dim=1)
+
         return self.probs.sort(dim=1, descending=True)  # ordered results
 
     def backward(self, ids):
@@ -172,14 +173,14 @@ def load_image(img_path):
     """
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    raw_image = cv2.imread(img_path)
-    image = transforms.Compose(
-        [
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        ]
-    )(raw_image[..., ::-1].copy())
-    image = image.unsqueeze(0).to(device)
+    raw_image = Image.open(img_path)
+    raw_image = raw_image.convert('RGB')
+    loader = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ])
+    image = loader(raw_image).unsqueeze(0).to(device)
+
     return image, raw_image
 
 
@@ -197,8 +198,8 @@ def cal_gradcam(gcam, image, target_layer):
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     probs, ids = gcam.forward(image)
-    ids_ = ids[0, 0].view(1, 1).to(device)
 
+    ids_ = ids[0, 0].view(1, 1).to(device)
     gcam.backward(ids=ids_)
 
     regions = gcam.generate(target_layer=target_layer)
@@ -217,7 +218,7 @@ def save_gradcam(file_path, region, raw_image, prob, pred, label_list,paper_cmap
 
     Returns:
     """
-
+    raw_image = np.array(raw_image)[:,:,::-1]
     region = region.cpu().numpy()
     cmap = cm.jet_r(region)[..., :3] * 255.0
     if paper_cmap:
@@ -226,10 +227,10 @@ def save_gradcam(file_path, region, raw_image, prob, pred, label_list,paper_cmap
     else:
         region = (cmap.astype(np.float) + raw_image.astype(np.float)) / 2
     #cv2.imwrite(file_path, np.uint8(region))
-    #print(region.shape)
+
     txt_img = np.zeros((50,region.shape[1],3),np.uint8)
     #txt_img[:]=(255,255,255)
-    #print(txt_img.shape)
+
     vcat = cv2.vconcat((txt_img, np.uint8(region)))
     cv2.putText(vcat,'{}: {:.1f}%'.format(label_list[pred]+' class', prob*100),(10,40), 2, 1,(255,255,255), 2, 0)
     cv2.imwrite(file_path, np.uint8(vcat))
@@ -247,42 +248,61 @@ def single_gradcam(gcam, target_layer, img_path, gcam_path,label_list, gt, paper
 
     Returns:
     """
-
     image, raw_image = load_image(img_path)
+    model_path = "../fundus_project/training/result/2_densenet169_model.pt"
+    target_layer = "features"
+    label_list = ['0ZERO','2TWO']
+    model = torch.load(model_path, map_location="cuda:0")
+
     region, prob, pred = cal_gradcam(gcam, image, target_layer)
+
     result_path = os.path.join(
             gcam_path, gt + '_' + label_list[pred] + '_' + str(round(prob,2)) + '_' + img_path.split('/')[-1]
             )
+
     save_gradcam(file_path=result_path, region=region, raw_image=raw_image,prob = prob, pred = pred, label_list = label_list, paper_cmap=paper_cmap)
 
+from confusion_matrix import plot_confusion_matrix
 
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.optim import lr_scheduler
+import numpy as np
+import torchvision
+from torchvision import datasets, models, transforms
 def main():
 
     model_path = "../fundus_project/training/result/2_densenet169_model.pt"
     target_layer = "features"
-    label_list = ['0ZERO','1ONE','2TWO']
+    label_list = ['0ZERO','2TWO']
     model = torch.load(model_path, map_location="cuda:0")
-    model.eval()
+
 
     ########## Case 1: Single file ##########
-    data_folder = "../data/mFS_2years_seed88_split_under_zoom_aug_clahe/val"
-    result_folder = "../0717_gc_res"
+    data_folder = "../data/mFS_2years_cutvd20_binary_split_under_aug_clahe/val"
+    result_folder = "../gc0720"
     cls_list = os.listdir(data_folder)
     gcam = init_gradcam(model)
+    pred_list = []
+    gt_list = []
     for cls in cls_list:
         img_folder = data_folder + '/' + cls
         result_cls_folder = result_folder + '/' + cls
         if not os.path.isdir(result_cls_folder):
             os.makedirs(result_cls_folder)
         for idx, img in enumerate(os.listdir(img_folder)):
-
             img_path = os.path.join(img_folder, img)
-
             if os.path.isdir(img_path):
                 continue
-
+            result_path = os.path.join(
+                result_cls_folder, img.split(".")[0] + "_" + str(idx) + "_" + target_layer + ".jpg"
+                )
             #print(result_path)
             single_gradcam(gcam, target_layer, img_path, result_cls_folder, label_list, cls, paper_cmap=True)
+
+
+
     ########## Case 2: Multiple files in a directory ##########
 
     # import os

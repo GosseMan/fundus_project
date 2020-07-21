@@ -309,8 +309,6 @@ def main():
             target_layer = "features"
         else:
             print('Grad-CAM : densenet169 외에는 아직 구현안됨')
-        model.eval()
-
         ########## Case 1: Single file ##########
         data_folder = data_dir+'/val'
         result_folder = "./result/gradcam_"+args.gpu_id
