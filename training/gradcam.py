@@ -249,10 +249,6 @@ def single_gradcam(gcam, target_layer, img_path, gcam_path,label_list, gt, paper
     Returns:
     """
     image, raw_image = load_image(img_path)
-    model_path = "../fundus_project/training/result/2_densenet169_model.pt"
-    target_layer = "features"
-    label_list = ['0ZERO','2TWO']
-    model = torch.load(model_path, map_location="cuda:0")
 
     region, prob, pred = cal_gradcam(gcam, image, target_layer)
 
