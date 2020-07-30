@@ -264,15 +264,15 @@ def single_gradcam(gcam, target_layer, img_path, gcam_path,label_list, gt, paper
 
 def main():
 
-    model_path = "../fundus_project/training/result/1_densenet169_model.pt"
+    model_path = "./result/1_densenet169_model.pt"
     target_layer = "features"
     label_list = ['0ZERO','1ONE','2TWO']
     model = torch.load(model_path, map_location="cuda:0")
 
 
     ########## Case 1: Single file ##########
-    data_folder = "../data/mFS_3years_split8_under_zoom_aug_clahe/val"
-    result_folder = "../fundus_project/training/result/seed8GradCAM"
+    data_folder = "../../data/mFS_3years_split8_under_zoom_aug_clahe/val"
+    result_folder = "./result/seed8GradCAM"
     cls_list = os.listdir(data_folder)
     gcam = init_gradcam(model)
     pred_list = []
