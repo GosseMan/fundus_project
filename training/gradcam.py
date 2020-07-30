@@ -38,10 +38,13 @@ Classes:
     GradCam(model)
 """
 
-
 import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.optim import lr_scheduler
+import torchvision
+from torchvision import datasets, models, transforms
 from torch.nn import functional as F
-from torchvision import transforms
 import numpy as np
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
@@ -258,15 +261,7 @@ def single_gradcam(gcam, target_layer, img_path, gcam_path,label_list, gt, paper
 
     save_gradcam(file_path=result_path, region=region, raw_image=raw_image,prob = prob, pred = pred, label_list = label_list, paper_cmap=paper_cmap)
 
-from confusion_matrix import plot_confusion_matrix
 
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.optim import lr_scheduler
-import numpy as np
-import torchvision
-from torchvision import datasets, models, transforms
 def main():
 
     model_path = "../fundus_project/training/result/2_densenet169_model.pt"

@@ -295,7 +295,7 @@ def main():
     criterion = nn.CrossEntropyLoss()
     optimizer_ft = optim.Adam(model_ft.parameters(),lr = args.lr)
     steps = int(args.epochs*0.7)
-    exp_lr_scheduler = lr_scheduler.MultiStepLR(optimizer_ft,milestones=[10,20],gamma=0.1)
+    exp_lr_scheduler = lr_scheduler.MultiStepLR(optimizer_ft,milestones=[10,20, 30],gamma=0.1)
     fig_name = args.network+'_'+args.gpu_id
     model_ft=train_model(model_ft,image_datasets,dataloaders,batch_size, criterion,optimizer_ft,
                          exp_lr_scheduler,fig_name, early_stopping=args.es, use_meta = args.metadata,
@@ -333,7 +333,7 @@ def main():
 
                 if os.path.isdir(img_path):
                     continue
-                gradcam.single_gradcam(gcam, target_layer, img_path, result_cls_folder, class_names, cls, paper_cmap=True)
+                gradcam.single_gradcam(gcam, target_layer, img_path, result__cls_folder, class_names, cls, paper_cmap=True)
     if args.roc == True:
         roc_curve(model_ft,dataloaders, batch_size, use_meta = args.metadata)
 
