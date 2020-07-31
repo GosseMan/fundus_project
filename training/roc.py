@@ -8,6 +8,8 @@ from PIL import Image
 from tqdm import tqdm
 from sklearn import metrics
 import torch
+import torchvision
+from torchvision import datasets, models, transforms
 """
 CIN Binary
 """
