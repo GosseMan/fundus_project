@@ -7,7 +7,7 @@ import random
 from PIL import Image
 from tqdm import tqdm
 from sklearn import metrics
-
+import torch
 """
 CIN Binary
 """
@@ -28,7 +28,7 @@ plt.xlabel('False Positive Rate', fontsize = 18)
 plt.ylabel('True Positive Rate', fontsize = 18)
 plt.title('Receiver operating characteristic curve', fontsize = 18)
 '''
-def line1(pred,act):
+def line1(pred,act,outpath):
     # print("AUC : " ,metrics.roc_auc_score(actual_class_list, predicted_value))
     fpr, tpr, thresholds = metrics.roc_curve(act, pred, pos_label=1)
     print("-" * 40)
@@ -41,7 +41,7 @@ def line1(pred,act):
     plt.xlabel('False Positive Rate', fontsize = 18)
     plt.ylabel('True Positive Rate', fontsize = 18)
     plt.title('Receiver operating characteristic curve', fontsize = 18)
-    outpath = './result/roc'
+    #outpath = './result/roc'
     while os.path.isfile(outpath+'.png'):
         outpath=outpath+'-1'
     plt.savefig(outpath+'.png')
@@ -70,3 +70,39 @@ print(len(thresholds))
 
 plt.show()
 '''
+def main():
+    model_path = "./result/1_densenet169_model.pt"
+    model = torch.load(model_path, map_location="cuda:0")
+    data_dir = "../../data/mFS_3years_binary_split8_under_aug_clahe"
+    batch_size = 6
+    image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])  for x in ['train', 'val']}
+    dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size,shuffle=True, num_workers=4) for x in ['train', 'val']}
+
+    preds_list = []
+    labels_list = []
+    model.eval()
+    for i, (inputs, labels) in enumerate(dataloaders['val']):
+        labels_list = labels_list + labels.tolist()
+        inputs = inputs.cuda()
+        labels = labels.cuda()
+        # 매개변수 경사도를 0으로 설정
+        # 순전파
+        # 학습 시에만 연산 기록을 추적
+
+        age_list = dataloaders['val'].dataset.samples[batch_size*i:batch_size*i+len(inputs)]
+        for i in range(len(age_list)):
+            age_list[i] = int(age_list[i][0].split('/')[-1].split('-')[-1].split('.')[0])
+        age_list = torch.Tensor(age_list).cuda()
+        outputs = model(inputs,age_list)
+        for out in outputs:
+            out = F.softmax(out,dim=0).tolist()
+            preds_list.append(out[1])
+        #_, preds = torch.max(outputs, 1)
+        #pred_list = preds.cpu().tolist()
+        #preds_list=preds_list+pred_list
+    fig_name = model_path.split('/')[-1]
+    fig_name = fig_name.split('.')[0]+'-roc'
+    line1(preds_list,labels_list,fig_name)
+
+if __name__ == '__main__':
+    main()
