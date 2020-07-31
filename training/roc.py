@@ -10,6 +10,7 @@ from sklearn import metrics
 import torch
 import torchvision
 from torchvision import datasets, models, transforms
+import torch.nn.functional as F
 """
 CIN Binary
 """
