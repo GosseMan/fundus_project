@@ -74,9 +74,9 @@ print(len(thresholds))
 plt.show()
 '''
 def main():
-    model_path = "./result/2_densenet169_model.pt"
+    model_path = "./result/3_densenet169_model.pt"
     model = torch.load(model_path, map_location="cuda:0")
-    data_dir = "../../data/mFS_3years_binary_split88_under_aug_clahe"
+    data_dir = "../../data/mFS_3years_binary_split888_under_aug_clahe"
     batch_size = 6
     data_transforms = {
         'train': transforms.Compose([
