@@ -163,7 +163,7 @@ def roc_curve(model, dataloaders,batch_size, use_meta, out_path):
         # 순전파
         # 학습 시에만 연산 기록을 추적
         if use_meta == False:
-
+            outputs = model(inputs)
         else:
             age_list = dataloaders['val'].dataset.samples[batch_size*i:batch_size*i+len(inputs)]
             for i in range(len(age_list)):
