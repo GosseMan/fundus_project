@@ -38,9 +38,10 @@ def test_model(model,image_datasets, dataloaders, criterion, class_num):
     running_corrects = 0
     pred_list = []
     label_list = []
-    for i, (inputs, labels) in enumerate(dataloaders,0):
-        print(labels[0])
+
+    for i, (inputs, labels) in enumerate(dataloaders):
         inputs = inputs.cuda()
+        label_list.append(labels[0])
         labels = labels.cuda()
         outputs = model(inputs)
         _, preds = torch.max(outputs, 1)
@@ -48,11 +49,8 @@ def test_model(model,image_datasets, dataloaders, criterion, class_num):
         running_loss += loss.item() * inputs.size(0)
         running_corrects += torch.sum(preds == labels.data)
         pred_list.append(preds[0])
-        label_list.append(labels[0])
-    epoch_loss = running_loss / dataset_sizes[phase]
-    epoch_acc = running_corrects.double() / dataset_sizes[phase]
-    print(label_list)
-    print(pred_list)
+    epoch_loss = running_loss / dataset_sizes
+    epoch_acc = running_corrects.double() / dataset_sizes
     true_pos = 0
     true_neg = 0
     false_pos = 0
@@ -71,11 +69,11 @@ def test_model(model,image_datasets, dataloaders, criterion, class_num):
         specificity = true_neg / (true_neg + false_pos)
         ppv = true_pos / (true_pos + false_pos)
         npv = true_neg / (true_neg + false_neg)
-    print('Loss: {:.4f} Acc: {:.4f}'.format(epoch_loss, epoch_acc))
-    print('Sensitivity: {:.4f}'.format(sensitivity))
-    print('Specificity: {:.4f}'.format(specificity))
-    print('PPV: {:.4f}'.format(ppv))
-    print('NPV: {:.4f}'.format(npv))
+        print('Loss: {:.4f} Acc: {:.4f}'.format(epoch_loss, epoch_acc))
+        print('Sensitivity: {:.4f}'.format(sensitivity))
+        print('Specificity: {:.4f}'.format(specificity))
+        print('PPV: {:.4f}'.format(ppv))
+        print('NPV: {:.4f}'.format(npv))
     return True
 
 
@@ -83,7 +81,7 @@ def roc_curve(model, dataloaders, out_path):
     preds_list = []
     labels_list = []
     model.eval()
-    for i, (inputs, labels) in enumerate(dataloaders['val']):
+    for i, (inputs, labels) in enumerate(dataloaders):
         labels_list = labels_list + labels.tolist()
         inputs = inputs.cuda()
         labels = labels.cuda()
@@ -97,17 +95,15 @@ def roc_curve(model, dataloaders, out_path):
         #_, preds = torch.max(outputs, 1)
         #pred_list = preds.cpu().tolist()
         #preds_list=preds_list+pred_list
-    roc.line1(preds_list,labels_list,'./result/'+out_path)
+    roc.line1(preds_list,labels_list,'./result/testset/'+out_path)
 
 def confusion_mat(model,fig_name, dataloaders,class_names):
-    was_training = model.training
     model.eval()
-    images_so_far = 0
     fig = plt.figure()
     pred=np.array([],dtype='int64')
     ground=np.array([],dtype='int64')
     with torch.no_grad():
-        for i, (inputs, labels) in enumerate(dataloaders['val']):
+        for i, (inputs, labels) in enumerate(dataloaders):
             ground=np.append(ground,labels.numpy())
             inputs = inputs.cuda()
             labels = labels.cuda()
@@ -119,57 +115,48 @@ def confusion_mat(model,fig_name, dataloaders,class_names):
     plot_confusion_matrix(ground,pred,classes=np.array(class_names),normalize=True)
     while os.path.isfile(fig_name+'_confusion.png'):
         fig_name=fig_name+'-1'
-    plt.savefig('./result/'+fig_name+"_confusion.png")
+    plt.savefig('./result/testset/'+fig_name+"_confusion.png")
 
 
 def main():
     parser = argparse.ArgumentParser(description = 'Network')
     parser.add_argument('--gpu_id',type=str,default='0',help='GPU_ID (default:0)')
-    parser.add_argument('--lr',type=float,default=0.001,help='Learning rate (default:0)')
     parser.add_argument('--gc',type=bool,default=False,help='GRAD-CAM (default=False)')
     parser.add_argument('--roc',type=bool,default=False,help='ROC-curve (default=False)')
-    parser.add_argument('--batch',type=int, default=6,help='Batch_size (default=6)')
     parser.add_argument('--data',type=str, help='Dataset directory name')
     parser.add_argument('--model',type=str, help='Model file name')
     args = parser.parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"]=args.gpu_id
-    data_transforms = {
-        'train': transforms.Compose([
+    data_transforms = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ]),
-        'val': transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ]),
-    }
+        ])
+
     data_dir = '../../data/'+args.data
-    image_datasets = datasets.ImageFolder(root = data_dir, data_transforms[x])
-    dataloaders = torch.utils.data.DataLoader(image_datasets, 1, shuffle=False, num_workers=4)
+    image_datasets = datasets.ImageFolder(root=data_dir, transform=data_transforms)
+    dataloaders = torch.utils.data.DataLoader(image_datasets, 1, shuffle=True, num_workers=4)
     class_names = image_datasets.classes
     print(class_names)
-
-    model_path = "./result/"+args.model
+    model_path = './result/'+args.model
     model_ft = torch.load(model_path, map_location="cuda:0")
 
-    if not os.path.isdir('./result'):
-        os.makedirs('./result')
+    if not os.path.isdir('./result/testset'):
+        os.makedirs('./result/testset')
 
     model_ft = model_ft.cuda()
     criterion = nn.CrossEntropyLoss()
     fig_name = args.model+'_'+args.gpu_id
-    (model,image_datasets, dataloaders, criterion)
+
     test_model(model_ft,image_datasets,dataloaders,criterion, len(class_names))
     #visualize_model(model_ft)
     confusion_mat(model_ft,fig_name,dataloaders,class_names)
-    print("time for train : ", time.time()-start)
     if args.gc == True:
         model = model_ft
         target_layer = "features"
         model.eval()
         ########## Case 1: Single file ##########
         data_folder = data_dir
-        result_folder = "./result/gradcam_"+args.gpu_id
+        result_folder = "./result/testset/gradcam_"+args.gpu_id
         while os.path.isdir(result_folder):
             result_folder=result_folder+'-1'
         gcam = gradcam.init_gradcam(model)
