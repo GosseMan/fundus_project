@@ -335,7 +335,7 @@ def main():
                     continue
                 gradcam.single_gradcam(gcam, target_layer, img_path, result_cls_folder, class_names, cls, paper_cmap=True)
     if args.roc == True:
-        roc_curve(model_ft,dataloaders, batch_size, use_meta = args.metadata,args.gpu_id+'-roc.png')
+        roc_curve(model_ft,dataloaders, batch_size, args.metadata, args.gpu_id+'-roc.png')
 
 if __name__ == '__main__':
     main()
