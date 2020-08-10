@@ -151,7 +151,7 @@ def train_model(model,image_datasets, dataloaders,batch_size, criterion, optimiz
     return model
 
 
-def roc_curve(model, dataloaders,batch_size, use_meta):
+def roc_curve(model, dataloaders,batch_size, use_meta, out_path):
     preds_list = []
     labels_list = []
     model.eval()
@@ -163,7 +163,7 @@ def roc_curve(model, dataloaders,batch_size, use_meta):
         # 순전파
         # 학습 시에만 연산 기록을 추적
         if use_meta == False:
-             outputs = model(inputs)
+
         else:
             age_list = dataloaders['val'].dataset.samples[batch_size*i:batch_size*i+len(inputs)]
             for i in range(len(age_list)):
@@ -176,7 +176,7 @@ def roc_curve(model, dataloaders,batch_size, use_meta):
         #_, preds = torch.max(outputs, 1)
         #pred_list = preds.cpu().tolist()
         #preds_list=preds_list+pred_list
-    roc.line1(preds_list,labels_list)
+    roc.line1(preds_list,labels_list,'./result/'+out_path)
 
 
 def confusion_mat(model,fig_name, dataloaders,class_names, batch_size, use_meta):
@@ -295,7 +295,7 @@ def main():
     criterion = nn.CrossEntropyLoss()
     optimizer_ft = optim.Adam(model_ft.parameters(),lr = args.lr)
     steps = int(args.epochs*0.7)
-    exp_lr_scheduler = lr_scheduler.MultiStepLR(optimizer_ft,milestones=[10,20, 30],gamma=0.1)
+    exp_lr_scheduler = lr_scheduler.MultiStepLR(optimizer_ft,milestones=[10,20,30],gamma=0.1)
     fig_name = args.network+'_'+args.gpu_id
     model_ft=train_model(model_ft,image_datasets,dataloaders,batch_size, criterion,optimizer_ft,
                          exp_lr_scheduler,fig_name, early_stopping=args.es, use_meta = args.metadata,
@@ -335,7 +335,7 @@ def main():
                     continue
                 gradcam.single_gradcam(gcam, target_layer, img_path, result_cls_folder, class_names, cls, paper_cmap=True)
     if args.roc == True:
-        roc_curve(model_ft,dataloaders, batch_size, use_meta = args.metadata)
+        roc_curve(model_ft,dataloaders, batch_size, use_meta = args.metadata,args.gpu_id+'-roc.png')
 
 if __name__ == '__main__':
     main()
