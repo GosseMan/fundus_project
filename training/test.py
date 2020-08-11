@@ -36,19 +36,21 @@ def test_model(model,image_datasets, dataloaders, criterion, class_num):
     model.eval()
     running_loss = 0.0
     running_corrects = 0
-    pred_list = []
-    label_list = []
-
+    pred_list = =np.array([],dtype='int64')
+    label_list = np.array([],dtype='int64')
+    pred=np.array([],dtype='int64')
+    ground=np.array([],dtype='int64')
     for i, (inputs, labels) in enumerate(dataloaders):
         inputs = inputs.cuda()
-        label_list.append(labels[0])
+        label_list=np.append(label_list,labels.numpy())
         labels = labels.cuda()
         outputs = model(inputs)
         _, preds = torch.max(outputs, 1)
         loss = criterion(outputs, labels)
         running_loss += loss.item() * inputs.size(0)
         running_corrects += torch.sum(preds == labels.data)
-        pred_list.append(preds[0])
+        preds=preds.cpu()
+        pred_list=np.append(pred_list,preds.numpy())
     epoch_loss = running_loss / dataset_sizes
     epoch_acc = running_corrects.double() / dataset_sizes
     true_pos = 0
