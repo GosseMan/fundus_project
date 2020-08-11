@@ -64,23 +64,17 @@ def test_model(model,image_datasets, dataloaders, criterion, class_num):
             false_pos += 1
         if la == 1 and pr == 1:
             true_pos += 1
-    print(label_list)
-    print(pred_list)
-    print(true_neg)
-    print(true_pos)
-    print(false_neg)
-    print(false_pos)
+
     if class_num == 2:
         sensitivity = true_pos / (true_pos + false_neg)
         specificity = true_neg / (true_neg + false_pos)
         ppv = true_pos / (true_pos + false_pos)
         npv = true_neg / (true_neg + false_neg)
-
-        print('Sensitivity: {:.4f}'.format(sensitivity))
-        print('Specificity: {:.4f}'.format(specificity))
-        print('PPV: {:.4f}'.format(ppv))
-        print('NPV: {:.4f}'.format(npv))
-    print('Loss: {:.4f} Acc: {:.4f}'.format(epoch_loss, epoch_acc))
+        print('Sensitivity: {:.5f}'.format(sensitivity))
+        print('Specificity: {:.5f}'.format(specificity))
+        print('PPV: {:.5f}'.format(ppv))
+        print('NPV: {:.5f}'.format(npv))
+    print('Loss: {:.5f} Acc: {:.5f}'.format(epoch_loss, epoch_acc))
     return True
 
 
@@ -180,7 +174,7 @@ def main():
                     continue
                 gradcam.single_gradcam(gcam, target_layer, img_path, result_cls_folder, class_names, cls, paper_cmap=True)
     if args.roc == True:
-        roc_curve(model_ft,dataloaders, args.gpu_id+'-roc.png')
+        roc_curve(model_ft,dataloaders, args.model+'-roc.png')
 
 if __name__ == '__main__':
     main()

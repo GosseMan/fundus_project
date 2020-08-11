@@ -226,9 +226,11 @@ def save_gradcam(file_path, region, raw_image, prob, pred, label_list,paper_cmap
     cmap = cm.jet_r(region)[..., :3] * 255.0
     if paper_cmap:
         alpha = region[..., None]
-        region = alpha * cmap + (1 - alpha) * raw_image
+        print(alpha)
+        print(alpha.shape)
+        region = alpha * cmap *0.6 + (1 - alpha*0.6) * raw_image
     else:
-        region = (cmap.astype(np.float) + raw_image.astype(np.float)) / 2
+        region = (cmap.astype(np.float) + raw_image.astype(np.float))/2
     #cv2.imwrite(file_path, np.uint8(region))
 
     txt_img = np.zeros((50,region.shape[1],3),np.uint8)
@@ -264,15 +266,15 @@ def single_gradcam(gcam, target_layer, img_path, gcam_path,label_list, gt, paper
 
 def main():
 
-    model_path = "./result/1_densenet169_model.pt"
+    model_path = "./0vs1vs23model.pt"
     target_layer = "features"
     label_list = ['0ZERO','1ONE','2TWO']
     model = torch.load(model_path, map_location="cuda:0")
 
 
     ########## Case 1: Single file ##########
-    data_folder = "../../data/mFS_3years_split8_under_zoom_aug_clahe/val"
-    result_folder = "./result/seed8GradCAM"
+    data_folder = "./data/smallset"
+    result_folder = "./here"
     cls_list = os.listdir(data_folder)
     gcam = init_gradcam(model)
     pred_list = []
