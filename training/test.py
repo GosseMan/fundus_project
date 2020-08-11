@@ -55,15 +55,15 @@ def test_model(model,image_datasets, dataloaders, criterion, class_num):
     true_neg = 0
     false_pos = 0
     false_neg = 0
-    for i in range(len(label_list)):
-        if label_list[i] == 0 and pred_list[i] == 0:
+    for i, (la, pr) in enumerate(zip(label_list, pred_list)):
+        if la == 0 and pr == 0:
             true_neg += 1
-        if label_list[i] == 1 and pred_list[i] == 0:
+        if la == 1 and pr == 0:
             false_neg += 1
-        if label_list[i] == 0 and pred_list[i] == 1:
+        if la == 0 and pr == 1:
             false_pos += 1
-        if label_list[i] == 1 and pred_list[i] == 1:
-            true_neg += 1
+        if la == 1 and pr == 1:
+            true_pos += 1
     print(label_list)
     print(pred_list)
     print(true_neg)
