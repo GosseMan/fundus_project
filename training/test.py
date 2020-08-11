@@ -64,6 +64,12 @@ def test_model(model,image_datasets, dataloaders, criterion, class_num):
             false_pos += 1
         if label_list[i] == 1 and pred_list[i] == 1:
             true_neg += 1
+    print(label_list)
+    print(pred_list)
+    print(true_neg)
+    print(true_pos)
+    print(false_neg)
+    print(false_pos)
     if class_num == 2:
         sensitivity = true_pos / (true_pos + false_neg)
         specificity = true_neg / (true_neg + false_pos)
@@ -157,7 +163,7 @@ def main():
         model.eval()
         ########## Case 1: Single file ##########
         data_folder = data_dir
-        result_folder = "./result/testset/gradcam_"+args.gpu_id
+        result_folder = "./result/testset/gradcam_"+args.model
         while os.path.isdir(result_folder):
             result_folder=result_folder+'-1'
         gcam = gradcam.init_gradcam(model)
