@@ -69,11 +69,12 @@ def test_model(model,image_datasets, dataloaders, criterion, class_num):
         specificity = true_neg / (true_neg + false_pos)
         ppv = true_pos / (true_pos + false_pos)
         npv = true_neg / (true_neg + false_neg)
-        print('Loss: {:.4f} Acc: {:.4f}'.format(epoch_loss, epoch_acc))
+
         print('Sensitivity: {:.4f}'.format(sensitivity))
         print('Specificity: {:.4f}'.format(specificity))
         print('PPV: {:.4f}'.format(ppv))
         print('NPV: {:.4f}'.format(npv))
+    print('Loss: {:.4f} Acc: {:.4f}'.format(epoch_loss, epoch_acc))
     return True
 
 
