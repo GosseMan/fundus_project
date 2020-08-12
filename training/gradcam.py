@@ -226,8 +226,6 @@ def save_gradcam(file_path, region, raw_image, prob, pred, label_list,paper_cmap
     cmap = cm.jet_r(region)[..., :3] * 255.0
     if paper_cmap:
         alpha = region[..., None]
-        print(alpha)
-        print(alpha.shape)
         region = alpha * cmap *0.6 + (1 - alpha*0.6) * raw_image
     else:
         region = (cmap.astype(np.float) + raw_image.astype(np.float))/2
