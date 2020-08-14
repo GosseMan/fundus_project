@@ -77,7 +77,6 @@ def test_model(model,image_datasets, dataloaders, criterion, class_num):
     print('Loss: {:.5f} Acc: {:.5f}'.format(epoch_loss, epoch_acc))
     return True
 
-
 def roc_curve(model, dataloaders, out_path):
     preds_list = []
     labels_list = []
@@ -117,7 +116,6 @@ def confusion_mat(model,fig_name, dataloaders,class_names):
     while os.path.isfile(fig_name+'_confusion.png'):
         fig_name=fig_name+'-1'
     plt.savefig('./result/testset/'+fig_name+"_confusion.png")
-
 
 def main():
     parser = argparse.ArgumentParser(description = 'Network')
