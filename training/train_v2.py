@@ -20,6 +20,8 @@ import cv2
 import roc
 import torch.nn.functional as F
 import random
+from efficientnet_pytorch import EfficientNet
+
 rand = 7
 torch.manual_seed(rand)
 np.random.seed(rand)
@@ -28,6 +30,7 @@ random.seed(rand)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 '''
+
 start=time.time()
 class MyDensenet169(nn.Module):
     def __init__(self, class_num, pretrained=True):
@@ -242,7 +245,7 @@ def main():
     image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])  for x in ['train', 'val']}
     dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size,shuffle=True, num_workers=4) for x in ['train', 'val']}
     class_names = image_datasets['train'].classes
-    print(class_names)
+    #print(class_names)
     if args.network == 'resnet18':
         model_ft = models.resnet18(pretrained=True)
         if not args.fine_tuning:
@@ -286,7 +289,8 @@ def main():
                     param.requires_grad = False
                 for param in model_ft.classifier.parameters():
                     param.requires_grad = True
-
+    elif args.network == 'densenet169':
+        model_ft = EfficientNet.from_pretrained('efficientnet-b5', num_classes = args.class_num)
     else:
         print("Write Network Name")
     if not os.path.isdir('./result'):
@@ -319,9 +323,6 @@ def main():
 
         ########## Case 1: Single file ##########
         data_folder = data_dir+'/val'
-
-
-
         result_folder = "./result/gradcam_"+args.gpu_id
         while os.path.isdir(result_folder):
             result_folder=result_folder+'-1'
