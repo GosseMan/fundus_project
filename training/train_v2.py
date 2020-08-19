@@ -289,7 +289,7 @@ def main():
                     param.requires_grad = False
                 for param in model_ft.classifier.parameters():
                     param.requires_grad = True
-    elif args.network == 'densenet169':
+    elif args.network == 'efficientnet-b5':
         model_ft = EfficientNet.from_pretrained('efficientnet-b5', num_classes = args.class_num)
     else:
         print("Write Network Name")
