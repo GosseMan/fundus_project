@@ -227,7 +227,7 @@ def main():
     parser.add_argument('--batch',type=int, default=6,help='Batch_size (default=6)')
     parser.add_argument('--metadata',type=bool, default=False,help='Use metadata (default=False)')
     parser.add_argument('--data',type=str, help='Dataset directory name')
-    parser.add_argument('--step',type=str, dfault=False, help ='Learning rate step (default=False)')
+    parser.add_argument('--step',type=str, default=False, help ='Learning rate step (default=False)')
     args = parser.parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"]=args.gpu_id
     data_transforms = {
