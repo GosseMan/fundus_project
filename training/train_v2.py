@@ -227,7 +227,7 @@ def main():
     parser.add_argument('--batch',type=int, default=6,help='Batch_size (default=6)')
     parser.add_argument('--metadata',type=bool, default=False,help='Use metadata (default=False)')
     parser.add_argument('--data',type=str, help='Dataset directory name')
-
+    parser.add_argument('--step',type=str, dfault=False, help ='Learning rate step (default=False)')
     args = parser.parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"]=args.gpu_id
     data_transforms = {
@@ -300,7 +300,10 @@ def main():
     criterion = nn.CrossEntropyLoss()
     optimizer_ft = optim.Adam(model_ft.parameters(),lr = args.lr)
     steps = int(args.epochs*0.7)
-    exp_lr_scheduler = lr_scheduler.MultiStepLR(optimizer_ft,milestones=[10,20,30],gamma=0.1)
+    if args.step == True:
+        exp_lr_scheduler = lr_scheduler.MultiStepLR(optimizer_ft,milestones=[10,20,30],gamma=0.1)
+    else:
+        exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft,step_size=1000,gamma=0)
     fig_name = args.network+'_'+args.gpu_id
     model_ft=train_model(model_ft,image_datasets,dataloaders,batch_size, criterion,optimizer_ft,
                          exp_lr_scheduler,fig_name, early_stopping=args.es, use_meta = args.metadata,
